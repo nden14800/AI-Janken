@@ -1,0 +1,2 @@
+# AI-Janken
+WebでAIとじゃんけんができます
