@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>じゃんけんAI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Color Variables --- */
+        :root {
+            --bg-color: #f0f0f0;
+            --text-color: #333;
+            --container-bg: #fff;
+            --container-shadow: rgba(0,0,0,0.1);
+            --border-color: #eee;
+            --button-bg: #4285F4;
+            --button-text: white;
+            --button-hover-bg: #357ae8;
+            --button-disabled-bg: #ccc;
+            --button-disabled-text: #666;
+            --secondary-text-color: #555;
+            --chart-grid-color: rgba(0, 0, 0, 0.1);
+            --chart-label-color: #666;
+            --chart-title-color: #333;
+            --notification-bg: rgba(0, 0, 0, 0.8);
+            --notification-text: white;
+            --notification-button-bg: #555;
+            --notification-button-hover-bg: #777;
+            --danger-button-bg: #f44336;
+            --danger-button-hover-bg: #d32f2f;
+            --warning-button-bg: #ff9800; /* Added for Pause */
+            --warning-button-hover-bg: #fb8c00; /* Added for Pause */
+            --accent1-color: rgb(75, 192, 192); /* Player 1 / You */
+            --accent2-color: rgb(255, 99, 132); /* Player 2 / AI / User 2 */
+            --accent3-color: rgb(201, 203, 207); /* Draw */
+            --accent4-color: rgb(153, 102, 255); /* Score Difference */
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --container-bg: #1e1e1e;
+                --container-shadow: rgba(255, 255, 255, 0.1);
+                --border-color: #333;
+                --button-bg: #5c8fef;
+                --button-text: #121212;
+                --button-hover-bg: #7faaf0;
+                --button-disabled-bg: #444;
+                --button-disabled-text: #888;
+                --secondary-text-color: #aaa;
+                --chart-grid-color: rgba(255, 255, 255, 0.1);
+                --chart-label-color: #aaa;
+                --chart-title-color: #e0e0e0;
+                --notification-bg: rgba(230, 230, 230, 0.9);
+                --notification-text: #121212;
+                --notification-button-bg: #bbb;
+                --notification-button-hover-bg: #ccc;
+                --danger-button-bg: #ef5350;
+                --danger-button-hover-bg: #e57373;
+                --warning-button-bg: #ffa726; /* Added for Pause */
+                --warning-button-hover-bg: #ffb74d; /* Added for Pause */
+                /* Keep accent colors */
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            font-family: 'Google Sans', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            animation: fadeIn 0.5s ease-out;
+            min-height: 100vh;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px var(--container-shadow);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+            animation-delay: 0.2s;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Apply transitions to all relevant elements for smooth theme changes */
+        h1, h2, h3, p, button, label, span, div, input, select, #scoreboard div, #game-display div, #player-controls button, #ai-vs-ai-controls > div, #ai-vs-ai-controls button, #chart-container, #round-info, #result-text, #turn-indicator, .zoom-controls button, .zoom-controls span {
+            font-family: 'Google Sans', sans-serif;
+            color: var(--text-color);
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+            transition: color 0.3s ease, background-color 0.3s ease; /* Added background-color */
+        }
+         button { color: var(--button-text); }
+         button:disabled { color: var(--button-disabled-text); }
+         #round-info, #ai-speed-display, .player-area div, .ai-area div, label, #ai-vs-ai-controls span, .zoom-controls span, #player-controls label { /* Added player-controls label */
+            color: var(--secondary-text-color);
+            transition: color 0.3s ease;
+         }
+         #result-text, #turn-indicator, #score-difference-display { color: var(--text-color); transition: color 0.3s ease;}
+         #player-score-display, #ai-score-display, #draw-score-display { font-weight: bold; transition: color 0.3s ease;}
+         #score-difference-display { font-weight: normal; transition: color 0.3s ease;}
+
+        h1 { animation-delay: 0.3s; }
+        h2 { animation-delay: 0.4s; }
+        #mode-selection button { animation-delay: 0.5s; }
+        #game-length-buttons button { animation-delay: 0.5s; }
+        #scoreboard div { animation-delay: 0.6s; }
+        .player-area div, .ai-area div { animation-delay: 0.7s; }
+        #player-controls button, #ai-vs-ai-controls > div, #ai-vs-ai-controls button { animation-delay: 0.8s; }
+        #chart-container { animation-delay: 0.9s; }
+        #round-info { animation-delay: 0.65s; }
+        #result-text { animation-delay: 0.75s; }
+        #turn-indicator { animation-delay: 0.75s; }
+        .zoom-controls { animation-delay: 1.0s; }
+
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards !important;
+            opacity: 0;
+        }
+
+        .initially-hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        button {
+            font-size: 1em;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease; /* Added opacity */
+        }
+        button:hover:not(:disabled) { /* Apply hover only when not disabled */
+            background-color: var(--button-hover-bg);
+        }
+        button:disabled {
+            background-color: var(--button-disabled-bg);
+            color: var(--button-disabled-text);
+            cursor: not-allowed;
+            opacity: 0.7; /* Slightly fade disabled buttons */
+        }
+        #quit-button, #ai-quit-button {
+             background-color: var(--danger-button-bg);
+        }
+         #quit-button:hover:not(:disabled), #ai-quit-button:hover:not(:disabled) {
+             background-color: var(--danger-button-hover-bg);
+         }
+         #start-pause-button.paused, #ai-vs-ai-start-stop.paused { /* Style for Pause state */
+            background-color: var(--warning-button-bg);
+         }
+         #start-pause-button.paused:hover:not(:disabled), #ai-vs-ai-start-stop.paused:hover:not(:disabled) {
+            background-color: var(--warning-button-hover-bg);
+         }
+
+
+        .mode-buttons button, #game-length-buttons button {
+             min-width: 80px;
+             margin-bottom: 10px;
+        }
+
+        #game-area {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+             transition: border-color 0.3s ease;
+        }
+
+        #scoreboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        #scoreboard div { animation-delay: 0.6s; }
+        #score-difference-display {
+            grid-column: 1 / -1;
+            margin-top: 10px;
+            font-size: 1em;
+            color: var(--secondary-text-color);
+             animation-delay: 0.65s;
+        }
+
+        #game-display {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        .player-area, .ai-area {
+            text-align: center;
+        }
+
+        .hand-display {
+            font-size: 3em;
+            min-width: 60px;
+            min-height: 60px;
+            display: inline-block;
+            line-height: 60px;
+            opacity: 1;
+            transition: opacity 0.3s ease; /* Smooth transition for reset */
+        }
+
+        #player-controls, #ai-vs-ai-controls {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex; /* Use flexbox for better alignment */
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center items horizontally */
+            gap: 15px; /* Add space between control groups */
+        }
+        #player-controls > div, #ai-vs-ai-controls > div { /* Style inner divs for grouping */
+             display: flex;
+             flex-wrap: wrap; /* Allow wrapping */
+             justify-content: center;
+             align-items: center;
+             gap: 10px; /* Space within group */
+        }
+        #ai-vs-ai-controls label, #ai-vs-ai-controls input, #ai-vs-ai-controls span { color: var(--secondary-text-color); transition: color 0.3s ease;}
+        #turn-indicator {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 1.2em;
+            transition: color 0.3s ease;
+        }
+
+        #chart-container {
+            width: 100%;
+            max-width: 100%;
+            height: 450px;
+            margin: 30px auto 20px auto;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px var(--container-shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            display: block;
+        }
+        #resultsChart {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #notification-area {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--notification-bg);
+            color: var(--notification-text);
+            padding: 15px 30px;
+            border-radius: 5px;
+            z-index: 1000;
+            text-align: center;
+            opacity: 0;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+            cursor: pointer;
+        }
+        #notification-area.fade-in {
+             display: block;
+             animation: fadeIn 0.5s ease-out forwards;
+        }
+        #notification-area button {
+            background-color: var(--notification-button-bg);
+            color: var(--notification-text);
+            margin-top: 10px;
+             transition: background-color 0.3s ease;
+        }
+         #notification-area button:hover {
+            background-color: var(--notification-button-hover-bg);
+        }
+        #notification-message {
+            margin-bottom: 10px;
+            opacity: 1;
+            animation: none;
+            color: var(--notification-text);
+            transition: color 0.3s ease;
+        }
+
+        #ai-speed-slider {
+            width: 200px;
+            margin: 0 10px;
+            cursor: pointer;
+            accent-color: var(--button-bg);
+        }
+
+        .result-text {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: var(--text-color);
+            transition: color 0.3s ease;
+            min-height: 1.5em; /* Prevent layout shift */
+        }
+
+        #player-hand, #ai-hand {
+             opacity: 1;
+        }
+
+        input[type=range] {
+          -webkit-appearance: none; appearance: none;
+          width: 200px; height: 8px; background: var(--border-color);
+          outline: none; border-radius: 4px; transition: background 0.3s ease;
+          vertical-align: middle;
+        }
+        input[type=range]::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 20px; height: 20px; background: var(--button-bg);
+          cursor: pointer; border-radius: 50%; transition: background 0.3s ease;
+        }
+        input[type=range]::-moz-range-thumb {
+          width: 20px; height: 20px; background: var(--button-bg);
+          cursor: pointer; border-radius: 50%; border: none; transition: background 0.3s ease;
+        }
+         input[type=range]::-moz-range-track {
+            background: var(--border-color); height: 8px; border-radius: 4px; transition: background 0.3s ease;
+         }
+
+        /* --- Switch Styles --- */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 44px;
+          height: 24px;
+          vertical-align: middle;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+          position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+          background-color: #ccc; transition: .4s;
+        }
+        .slider:before {
+          position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+          background-color: white; transition: .4s;
+        }
+        input:checked + .slider { background-color: var(--button-bg); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--button-bg); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .slider.round { border-radius: 24px; }
+        .slider.round:before { border-radius: 50%; }
+        /* --- End Switch Styles --- */
+
+        /* Adjust layout for zoom controls */
+        .zoom-controls {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+            animation-delay: 1.0s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .zoom-controls > span {
+            display: inline-flex;
+            align-items: center;
+        }
+         .zoom-controls span label, .zoom-controls span span { /* Style label text */
+             color: var(--secondary-text-color);
+             transition: color 0.3s ease;
+             vertical-align: middle;
+             margin-left: 5px;
+         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>じゃんけんAI</h1>
+
+        <div id="mode-selection">
+            <h2>モード選択</h2>
+            <div class="mode-buttons">
+                <button onclick="selectMode('player-vs-ai')">あなた VS AI</button>
+                <button onclick="selectMode('ai-vs-ai')">AI VS AI</button>
+                <button onclick="selectMode('player-vs-player')">あなた VS ユーザー2</button>
+            </div>
+        </div>
+
+        <div id="game-length-selection" class="initially-hidden">
+            <h2>勝負回数選択</h2>
+            <div id="game-length-buttons">
+                <button onclick="setGameLength(1)">1回勝負</button>
+                <button onclick="setGameLength(5)">5回勝負</button>
+                <button onclick="setGameLength(10)">10回勝負</button>
+                <button onclick="setGameLength(25)">25回勝負</button>
+                <button onclick="setGameLength(50)">50回勝負</button>
+                <button onclick="setGameLength(100)">100回勝負</button>
+                <button onclick="setGameLength(250)">250回勝負</button>
+                <button onclick="setGameLength(500)">500回勝負</button>
+                <button onclick="setGameLength(1000)">1,000回勝負</button>
+                <button onclick="setGameLength(Infinity)">∞</button>
+            </div>
+        </div>
+
+        <div id="game-area" class="initially-hidden">
+            <div id="scoreboard">
+                 <div id="player-score-display">あなた: 0</div>
+                 <div id="draw-score-display">あいこ: 0</div>
+                 <div id="ai-score-display">AI: 0</div>
+                 <div id="score-difference-display">同点</div>
+            </div>
+             <div id="round-info" style="text-align: center; margin-bottom: 15px; font-size: 0.9em;">ラウンド: 0 / 0</div>
+
+            <div id="game-display">
+                <div class="player-area">
+                    <div id="player-name">あなた</div>
+                    <div id="player-hand" class="hand-display">?</div>
+                </div>
+                <div style="font-size: 1.5em; font-weight: bold;">VS</div>
+                <div class="ai-area">
+                     <div id="ai-name">AI</div>
+                    <div id="ai-hand" class="hand-display">?</div>
+                </div>
+            </div>
+
+             <div id="result-text" class="result-text" style="text-align: center;">結果を待っています...</div>
+             <div id="turn-indicator" style="text-align: center;" class="initially-hidden"></div>
+
+
+            <div id="player-controls" class="initially-hidden">
+                 <!-- Player Action Buttons -->
+                 <div>
+                    <h3 id="player-controls-title" style="margin: 0 10px 0 0;">あなたの手を選択してください:</h3>
+                    <button onclick="playerChoose('rock')">✊ グー</button>
+                    <button onclick="playerChoose('paper')">✋ パー</button>
+                    <button onclick="playerChoose('scissors')">✌️ チョキ</button>
+                 </div>
+                 <!-- Game Control Buttons -->
+                 <div>
+                    <button id="start-pause-button" onclick="toggleStartPause()">スタート</button>
+                    <button id="quit-button" onclick="quitGame()">辞める</button>
+                 </div>
+            </div>
+
+            <div id="ai-vs-ai-controls" class="initially-hidden">
+                 <!-- Speed Control -->
+                <div>
+                    <label for="ai-speed-slider">対戦速度 (回/秒):</label>
+                    <input type="range" id="ai-speed-slider" min="1" max="200" value="10" oninput="updateSpeedDisplay(this.value)">
+                    <span id="ai-speed-display">10</span> 回/秒
+                </div>
+                 <!-- Game Control Buttons -->
+                <div>
+                    <button id="ai-vs-ai-start-stop" onclick="toggleStartPause()">スタート</button>
+                    <button id="ai-quit-button" onclick="quitGame()">辞める</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="chart-container" class="initially-hidden">
+            <canvas id="resultsChart"></canvas>
+            <div class="zoom-controls initially-hidden">
+                <button onclick="resetZoom()" id="reset-zoom-button">ズームリセット</button>
+                <span>
+                    <label class="switch">
+                        <input type="checkbox" id="zoom-toggle-switch" onchange="toggleZoomSwitch(this.checked)" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span>ズーム有効</span>
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="notification-area" onclick="hideNotification()">
+        <p id="notification-message">メッセージ</p>
+    </div>
+
+    <script>
+        // Chart.js のデフォルトフォントを設定
+        Chart.defaults.font.family = "'Google Sans', sans-serif";
+
+        const HANDS = ['rock', 'paper', 'scissors'];
+        const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
+        const WIN_CONDITIONS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+        // ... (UNITS and UNIT_KEYS remain unchanged) ...
+        const UNITS = {
+             3: 'K',  6: 'M',  9: 'B', 12: 'T', 15: 'Q', 18: 'Qu', 21: 'Sx', 24: 'Sp',
+            27: 'O', 30: 'N', 33: 'D', 36: 'Ud', 39: 'Duo', 42: 'Tre', 45: 'Qua',
+            48: 'Qd', 51: 'Sd', 54: 'Sepd', 57: 'Oct', 60: 'NV', 63: 'V', 66: 'UNV',
+            69: 'A', 72: 'C', 75: 'E', 78: 'F', 81: 'G', 84: 'H', 87: 'I', 90: 'J',
+            93: 'L', 96: 'P'
+        };
+        const UNIT_KEYS = Object.keys(UNITS).map(Number).sort((a, b) => b - a);
+
+
+        let gameMode = '';
+        let currentGameLength = 0;
+        let currentRound = 0;
+        let scores = { player1: 0, player2: 0, draw: 0 };
+        let playerHistory = []; // Used for Player vs AI learning
+        let ai1History = []; // Used for AI vs AI
+        let ai2History = []; // Used for AI vs AI
+        let chartInstance = null;
+        let chartData = { labels: [], datasets: [] };
+        let aiVsAiIntervalId = null;
+        let aiVsAiSpeed = 10;
+        let isAiVsAiRunning = false; // Specific to AI vs AI auto-play state
+        let isGameOver = false;
+        let isGamePaused = true; // *** NEW: Game pause state ***
+        let colorSchemeMatcher = window.matchMedia('(prefers-color-scheme: dark)');
+        let notificationTimeoutId = null;
+        let isNotificationVisible = false;
+        let currentPlayerTurn = 'player1'; // For Player vs Player
+        let player1HandChoice = null; // For Player vs Player
+        let roundResetTimeoutId = null;
+        let isZoomEnabled = true;
+
+        // DOM Elements
+        const modeSelectionDiv = document.getElementById('mode-selection');
+        const gameLengthSelectionDiv = document.getElementById('game-length-selection');
+        const gameAreaDiv = document.getElementById('game-area');
+        const scoreboardPlayerDisplay = document.getElementById('player-score-display');
+        const scoreboardDrawDisplay = document.getElementById('draw-score-display');
+        const scoreboardAiDisplay = document.getElementById('ai-score-display');
+        const scoreDifferenceDisplay = document.getElementById('score-difference-display');
+        const roundInfoDisplay = document.getElementById('round-info');
+        const playerNameDisplay = document.getElementById('player-name');
+        const aiNameDisplay = document.getElementById('ai-name');
+        const playerHandDisplay = document.getElementById('player-hand');
+        const aiHandDisplay = document.getElementById('ai-hand');
+        const resultTextDisplay = document.getElementById('result-text');
+        const turnIndicator = document.getElementById('turn-indicator');
+        const playerControlsDiv = document.getElementById('player-controls');
+        const playerControlsTitle = document.getElementById('player-controls-title');
+        const aiVsAiControlsDiv = document.getElementById('ai-vs-ai-controls');
+        const aiSpeedSlider = document.getElementById('ai-speed-slider');
+        const aiSpeedDisplay = document.getElementById('ai-speed-display');
+        const startPauseButton = document.getElementById('start-pause-button'); // *** NEW: General Start/Pause Button ***
+        const aiVsAiStartStopButton = document.getElementById('ai-vs-ai-start-stop'); // Renamed for clarity, but points to the same button
+        const chartContainerDiv = document.getElementById('chart-container');
+        const notificationArea = document.getElementById('notification-area');
+        const notificationMessage = document.getElementById('notification-message');
+        const quitButton = document.getElementById('quit-button'); // General Quit Button
+        const aiQuitButton = document.getElementById('ai-quit-button'); // AI Quit Button (shares functionality)
+        const gameLengthButtons = document.getElementById('game-length-buttons').querySelectorAll('button');
+        const playerChoiceButtons = playerControlsDiv.querySelectorAll('button:not(#start-pause-button):not(#quit-button)'); // Exclude control buttons
+        const resetZoomButton = document.getElementById('reset-zoom-button');
+        const zoomToggleSwitch = document.getElementById('zoom-toggle-switch');
+        const zoomControlsDiv = document.querySelector('.zoom-controls');
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadGameData();
+            colorSchemeMatcher.addEventListener('change', handleColorSchemeChange);
+            updateScoreboard();
+            resetHandDisplays();
+            isGamePaused = true; // Ensure paused on load
+            // Hide controls initially
+            hideElement(playerControlsDiv);
+            hideElement(aiVsAiControlsDiv);
+        };
+
+        // --- Color Scheme Handling ---
+        function handleColorSchemeChange(e) {
+            if (chartInstance) {
+                updateChartColors();
+                chartInstance.update();
+            }
+            // Update pause button style if needed (though CSS vars should handle it)
+            updateStartPauseButtonState();
+        }
+        function getChartColors() {
+            const style = getComputedStyle(document.documentElement);
+            return {
+                gridColor: style.getPropertyValue('--chart-grid-color').trim(),
+                labelColor: style.getPropertyValue('--chart-label-color').trim(),
+                titleColor: style.getPropertyValue('--chart-title-color').trim(),
+                accent1: style.getPropertyValue('--accent1-color').trim(),
+                accent2: style.getPropertyValue('--accent2-color').trim(),
+                accent3: style.getPropertyValue('--accent3-color').trim(),
+                accent4: style.getPropertyValue('--accent4-color').trim()
+            };
+        }
+         function updateChartColors() {
+             if (!chartInstance) return;
+             const colors = getChartColors();
+             // Update dataset colors
+             if (chartInstance.data.datasets[0]) chartInstance.data.datasets[0].borderColor = colors.accent1;
+             if (chartInstance.data.datasets[1]) chartInstance.data.datasets[1].borderColor = colors.accent2;
+             if (chartInstance.data.datasets[2]) chartInstance.data.datasets[2].borderColor = colors.accent3;
+             if (chartInstance.data.datasets[3]) chartInstance.data.datasets[3].borderColor = colors.accent4;
+             // Update scales colors
+             if (chartInstance.options.scales.x) {
+                chartInstance.options.scales.x.grid.color = colors.gridColor;
+                chartInstance.options.scales.x.ticks.color = colors.labelColor;
+                chartInstance.options.scales.x.title.color = colors.titleColor;
+             }
+             if (chartInstance.options.scales.y) {
+                chartInstance.options.scales.y.grid.color = colors.gridColor;
+                chartInstance.options.scales.y.ticks.color = colors.labelColor;
+                chartInstance.options.scales.y.title.color = colors.titleColor;
+             }
+              if (chartInstance.options.scales.y1) {
+                 chartInstance.options.scales.y1.grid.color = colors.gridColor; // Might be off if grid.drawOnChartArea: false
+                 chartInstance.options.scales.y1.ticks.color = colors.labelColor;
+                 chartInstance.options.scales.y1.title.color = colors.titleColor;
+             }
+             // Update plugin colors
+             if (chartInstance.options.plugins.legend) chartInstance.options.plugins.legend.labels.color = colors.labelColor;
+             if (chartInstance.options.plugins.title) chartInstance.options.plugins.title.color = colors.titleColor;
+         }
+
+        // --- Mode and Game Length Selection ---
+        function selectMode(mode) {
+            if (isNotificationVisible) hideNotification(true); // Hide notification immediately
+
+            gameMode = mode;
+            hideElement(modeSelectionDiv);
+            fadeInElement(gameLengthSelectionDiv);
+
+            let p1Name = 'あなた', p2Name = 'AI';
+            if (mode === 'ai-vs-ai') { p1Name = 'AI 1'; p2Name = 'AI 2'; }
+            else if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
+
+            // Use fadeInElementText for smoother updates
+            fadeInElementText(playerNameDisplay, p1Name);
+            fadeInElementText(aiNameDisplay, p2Name);
+
+            // Reset game state completely
+            resetGameFullState();
+
+            fadeInElementText(resultTextDisplay, '勝負回数を選択してください...');
+            hideElement(zoomControlsDiv);
+        }
+
+        function setGameLength(length) {
+            if (isNotificationVisible) hideNotification(true);
+
+            currentGameLength = length;
+            resetGameFullState(); // Reset scores, histories, round, flags
+
+            updateScoreboard();
+            updateRoundInfo();
+            resetHandDisplays();
+
+            hideElement(gameLengthSelectionDiv);
+            fadeInElement(gameAreaDiv);
+            fadeInElement(chartContainerDiv);
+
+            isZoomEnabled = true;
+            initializeChart(); // Initialize chart after container is visible
+            fadeInElement(zoomControlsDiv);
+            zoomToggleSwitch.checked = isZoomEnabled;
+
+            // Hide all control areas first
+            hideElement(playerControlsDiv);
+            hideElement(aiVsAiControlsDiv);
+            hideElement(turnIndicator);
+
+            // Set initial game state to paused, waiting for start
+            isGamePaused = true;
+
+            if (gameMode === 'player-vs-ai' || gameMode === 'player-vs-player') {
+                fadeInElement(playerControlsDiv);
+                enablePlayerChoices(false); // Choices disabled until started
+                fadeInElement(startPauseButton);
+                fadeInElement(quitButton);
+                if (gameMode === 'player-vs-player') {
+                    fadeInElement(turnIndicator); // Show indicator but update text later
+                }
+            } else if (gameMode === 'ai-vs-ai') {
+                fadeInElement(aiVsAiControlsDiv);
+                aiSpeedSlider.disabled = false; // Speed adjustable before start
+                fadeInElement(aiVsAiStartStopButton);
+                fadeInElement(aiQuitButton);
+            }
+
+            updateStartPauseButtonState(); // Set button text to "スタート" and enable
+            fadeInElementText(resultTextDisplay, '「スタート」を押してゲームを開始してください。');
+        }
+
+        // --- Game State Control (Start/Pause/Quit) ---
+
+        function toggleStartPause() {
+            if (isGameOver) return; // Don't allow start/pause if game is over
+
+            isGamePaused = !isGamePaused;
+            clearTimeout(roundResetTimeoutId); // Clear any pending round reset
+
+            if (gameMode === 'ai-vs-ai') {
+                if (!isGamePaused) { // Start or Resume AI vs AI
+                    startAiVsAi();
+                } else { // Pause AI vs AI
+                    stopAiVsAi();
+                }
+            } else { // Player vs AI or Player vs Player
+                if (!isGamePaused) { // Resume or Start
+                    enablePlayerChoices(true); // Enable hand choices
+                    updateTurnIndicator(); // Show correct turn message
+                    if (currentRound === 0) { // First start
+                         fadeInElementText(resultTextDisplay, getWaitingMessage());
+                    } else { // Resume
+                         fadeInElementText(resultTextDisplay, getWaitingMessage()); // Or maybe "再開しました。..."
+                    }
+                     // If a round was in progress (e.g., P1 chose in P vs P), restore state if needed
+                     // Currently, pausing resets the pending choice, which is simpler.
+                } else { // Pause
+                    enablePlayerChoices(false); // Disable hand choices
+                    fadeInElementText(resultTextDisplay, '一時停止中... 「スタート」で再開します。');
+                    // Clear pending choices in Player vs Player mode if paused mid-turn
+                    if (gameMode === 'player-vs-player' && currentPlayerTurn === 'player2') {
+                        player1HandChoice = null; // Reset P1 choice
+                        currentPlayerTurn = 'player1'; // Go back to P1 turn on resume
+                        resetHandDisplays(); // Clear displays
+                        // No need to update turn indicator text here, it will update on resume
+                    }
+                }
+            }
+            updateStartPauseButtonState(); // Update button text and style
+        }
+
+        function updateStartPauseButtonState() {
+            let button = (gameMode === 'ai-vs-ai') ? aiVsAiStartStopButton : startPauseButton;
+            if (isGameOver) {
+                button.textContent = '終了';
+                button.disabled = true;
+                button.classList.remove('paused');
+            } else if (isGamePaused) {
+                button.textContent = 'スタート'; // Or '再開' if currentRound > 0? Let's keep 'スタート' simple
+                button.disabled = false;
+                button.classList.remove('paused');
+            } else {
+                button.textContent = '一時停止';
+                button.disabled = false;
+                button.classList.add('paused'); // Add class for warning color
+            }
+        }
+
+        function quitGame() {
+             // Allow quitting even if paused
+            if (isGameOver) return; // Already over
+
+            isGameOver = true;
+            isGamePaused = true; // Ensure game stops
+            clearTimeout(roundResetTimeoutId);
+            clearTimeout(notificationTimeoutId); // Clear pending notifications
+
+            if (gameMode === 'ai-vs-ai') {
+                if (isAiVsAiRunning) stopAiVsAi(); // Stop the interval
+                aiSpeedSlider.disabled = true;
+                aiVsAiStartStopButton.disabled = true;
+                hideElement(aiQuitButton);
+            } else {
+                enablePlayerChoices(false);
+                startPauseButton.disabled = true;
+                hideElement(quitButton);
+                hideElement(turnIndicator);
+            }
+
+            // Determine winner based on current scores
+            let finalMessage = `勝負終了！ (${formatNumber(scores.player1)} 対 ${formatNumber(scores.player2)}`;
+            if (scores.draw > 0) finalMessage += ` あいこ ${formatNumber(scores.draw)}回`;
+            finalMessage += `) `;
+            let p1FinalName = playerNameDisplay.textContent.split(':')[0].trim();
+            let p2FinalName = aiNameDisplay.textContent.split(':')[0].trim();
+
+            if (scores.player1 > scores.player2) finalMessage += `${p1FinalName}の勝ちです！`;
+            else if (scores.player2 > scores.player1) finalMessage += `${p2FinalName}の勝ちです！`;
+            else finalMessage += "引き分けです！";
+
+            fadeInElementText(resultTextDisplay, finalMessage); // Show final result on main screen
+            showNotification(finalMessage, false, true, 4000); // Show notification as well
+
+            // Wait slightly longer than notification to reset
+            setTimeout(resetForNewGameSelection, 4500);
+        }
+
+
+        // --- Game Logic ---
+        function playerChoose(playerHand) {
+             // Guard against clicks when paused, game over, or not player's turn
+             if (isGamePaused || isGameOver) return;
+             if (gameMode === 'player-vs-player' && currentPlayerTurn !== 'player1' && playerControlsDiv.contains(event.target)) return;
+              if (gameMode === 'player-vs-player' && currentPlayerTurn !== 'player2' && aiNameDisplay.contains(event.target)) return; // Hypothetical second player control area
+
+             clearTimeout(roundResetTimeoutId); // Clear pending resets
+
+             if (gameMode === 'player-vs-ai') {
+                 enablePlayerChoices(false); // Disable buttons during AI 'thinking' and result display
+                 const aiHand = getAiHand(playerHistory);
+                 playerHistory.push(playerHand);
+                 const MAX_HISTORY = 500;
+                 if (playerHistory.length > MAX_HISTORY) playerHistory.shift();
+                 playRound(playerHand, aiHand);
+             } else if (gameMode === 'player-vs-player') {
+                 handlePlayerVsPlayerChoice(playerHand);
+             }
+        }
+
+        function handlePlayerVsPlayerChoice(hand) {
+            if (isGamePaused || isGameOver) return; // Added guards
+
+            if (currentPlayerTurn === 'player1') {
+                player1HandChoice = hand;
+                currentPlayerTurn = 'player2';
+                resetHandDisplays(); // Clear hands for P2's turn
+                updateTurnIndicator(); // Show it's P2's turn
+                enablePlayerChoices(true); // Keep buttons enabled (conceptually for P2)
+                fadeInElementText(resultTextDisplay, getWaitingMessage());
+                // Visually indicate P1 chose (optional)
+                playerHandDisplay.textContent = '❔'; // Show a placeholder for P1
+            } else { // Player 2's turn
+                const player2HandChoice = hand;
+                if (!player1HandChoice) return; // Should not happen if logic is correct
+
+                enablePlayerChoices(false); // Disable choices during result display
+                playRound(player1HandChoice, player2HandChoice);
+
+                // Reset for next round (will be handled by playRound's setTimeout if not game over)
+                player1HandChoice = null;
+                currentPlayerTurn = 'player1';
+            }
+        }
+
+        function playRound(hand1, hand2) {
+             if (isGameOver) return; // Double check, although called usually after checks
+             clearTimeout(roundResetTimeoutId);
+
+             currentRound++;
+             const winner = determineWinner(hand1, hand2);
+
+             // Update scores
+             if (winner === 'player1') scores.player1++;
+             else if (winner === 'player2') scores.player2++;
+             else scores.draw++;
+
+             // Update UI
+             updateScoreboard();
+             updateRoundInfo();
+             updateHandDisplays(hand1, hand2); // Show chosen hands
+
+             let p1Name = playerNameDisplay.textContent.split(':')[0].trim();
+             let p2Name = aiNameDisplay.textContent.split(':')[0].trim();
+             let winnerName = '';
+             if (winner === 'player1') winnerName = `${p1Name}の勝ち！`;
+             else if (winner === 'player2') winnerName = `${p2Name}の勝ち！`;
+             else winnerName = "あいこ！";
+             fadeInElementText(resultTextDisplay, winnerName);
+
+             updateChart();
+             if (gameMode === 'player-vs-ai') saveGameData(); // Save history for AI learning
+
+             checkGameEnd(); // Check if the game reached its length limit
+
+             // Schedule reset for the next round IF the game is not over and not paused
+             if (!isGameOver && !isGamePaused) {
+                 const delay = (gameMode === 'ai-vs-ai') ? Math.max(50, (1000 / aiVsAiSpeed) * 0.7) : 1000; // Shorter delay for AIvsAI, longer for player
+                 roundResetTimeoutId = setTimeout(() => {
+                     if (isGameOver || isGamePaused) return; // Check again before resetting
+                     resetHandDisplays();
+                     fadeInElementText(resultTextDisplay, getWaitingMessage());
+                     if (gameMode !== 'ai-vs-ai') {
+                         enablePlayerChoices(true); // Re-enable buttons for player modes
+                         updateTurnIndicator(); // Update turn info for P vs P
+                     }
+                 }, delay);
+             } else if (isGameOver) {
+                 // If game ended, ensure controls are disabled
+                 enablePlayerChoices(false);
+                 updateStartPauseButtonState(); // Update button to '終了' and disable
+             }
+        }
+
+        function determineWinner(hand1, hand2) {
+            if (hand1 === hand2) return 'draw';
+            if (WIN_CONDITIONS[hand1] === hand2) return 'player1';
+            return 'player2';
+        }
+
+        function getAiHand(history) {
+            // Simple AI: slightly predictive based on recent history, otherwise random
+            const historyLength = history.length;
+            const explorationRate = 0.20; // Increased exploration a bit
+
+            // Random move sometimes or if history is short
+            if (Math.random() < explorationRate || historyLength < 5) {
+                return HANDS[Math.floor(Math.random() * HANDS.length)];
+            }
+
+            // Try to counter the opponent's most frequent recent move
+            const lookback = Math.min(historyLength, 10);
+            const recentHistory = history.slice(-lookback);
+            const counts = recentHistory.reduce((acc, move) => {
+                acc[move] = (acc[move] || 0) + 1;
+                return acc;
+            }, {});
+
+            let mostFrequentMove = null;
+            let maxCount = 0;
+            for (const move in counts) {
+                if (counts[move] > maxCount) {
+                    maxCount = counts[move];
+                    mostFrequentMove = move;
+                } else if (counts[move] === maxCount) {
+                    // If there's a tie, maybe don't counter
+                    mostFrequentMove = null; // Less predictable if tie
+                }
+            }
+
+            // If a move is significantly frequent, try to beat it
+            if (mostFrequentMove && maxCount > lookback / 2.5) { // Threshold for countering
+                const winningMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === mostFrequentMove);
+                if (winningMove) return winningMove;
+            }
+
+            // Fallback: Counter the opponent's very last move (simple pattern break)
+            const lastMove = history[historyLength - 1];
+            const counterMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === lastMove);
+            if (counterMove && Math.random() < 0.6) { // Counter last move 60% of the time
+                 return counterMove;
+            }
+
+            // Final fallback: random
+            return HANDS[Math.floor(Math.random() * HANDS.length)];
+        }
+
+
+        function checkGameEnd() {
+             if (isGameOver) return; // Already checked or quit
+
+             if (currentGameLength !== Infinity && currentRound >= currentGameLength) {
+                 isGameOver = true;
+                 isGamePaused = true; // Treat as paused
+                 clearTimeout(roundResetTimeoutId);
+
+                 let finalMessage = `勝負終了！ (${formatNumber(scores.player1)} 対 ${formatNumber(scores.player2)}`;
+                 if (scores.draw > 0) finalMessage += ` あいこ ${formatNumber(scores.draw)}回`;
+                 finalMessage += `) `;
+                 let p1FinalName = playerNameDisplay.textContent.split(':')[0].trim();
+                 let p2FinalName = aiNameDisplay.textContent.split(':')[0].trim();
+
+                 if (scores.player1 > scores.player2) finalMessage += `${p1FinalName}の勝ちです！`;
+                 else if (scores.player2 > scores.player1) finalMessage += `${p2FinalName}の勝ちです！`;
+                 else finalMessage += "引き分けです！";
+
+                 fadeInElementText(resultTextDisplay, finalMessage); // Show result on main screen
+                 showNotification(finalMessage, false, true, 4000);
+
+                 // Disable controls
+                 enablePlayerChoices(false);
+                 if (gameMode === 'ai-vs-ai') {
+                     if (isAiVsAiRunning) stopAiVsAi();
+                     aiSpeedSlider.disabled = true;
+                     aiVsAiStartStopButton.disabled = true;
+                     hideElement(aiQuitButton); // Hide quit button after game ends
+                 } else {
+                     startPauseButton.disabled = true;
+                     hideElement(quitButton); // Hide quit button after game ends
+                     hideElement(turnIndicator);
+                 }
+                 updateStartPauseButtonState(); // Reflect final state
+
+                 setTimeout(resetForNewGameSelection, 4500);
+             }
+        }
+
+        function resetForNewGameSelection() {
+             // Hide game elements
+             hideElement(gameAreaDiv);
+             hideElement(chartContainerDiv);
+             hideElement(playerControlsDiv);
+             hideElement(aiVsAiControlsDiv);
+             hideElement(turnIndicator);
+             hideElement(zoomControlsDiv);
+             hideElement(quitButton); // Ensure quit buttons are hidden
+             hideElement(aiQuitButton);
+
+             // Show mode selection
+             fadeInElement(modeSelectionDiv);
+             hideElement(gameLengthSelectionDiv); // Hide length selection too
+
+             // Reset chart
+             if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+             chartData = { labels: [], datasets: [] };
+
+             // Reset state variables fully
+             resetGameFullState();
+             gameMode = ''; // Clear mode as well
+
+             // Reset UI text elements to initial state
+             updateScoreboard();
+             resetHandDisplays();
+             fadeInElementText(resultTextDisplay, ''); // Clear result text
+             fadeInElementText(roundInfoDisplay, ''); // Clear round info
+             if (isNotificationVisible) hideNotification(true); // Hide any lingering notification
+        }
+
+        // --- AI vs AI Specific Logic ---
+        function startAiVsAi() {
+            // Called by toggleStartPause when resuming/starting AIvsAI
+            if (isGameOver || isAiVsAiRunning) return; // Guard
+            isAiVsAiRunning = true;
+            isGamePaused = false; // Ensure pause state is correct
+            aiSpeedSlider.disabled = true; // Disable slider while running
+            fadeInElementText(resultTextDisplay, '対戦中...');
+            updateStartPauseButtonState(); // Update button text/style
+            runAiVsAiRound(); // Start the first round immediately
+        }
+
+        function stopAiVsAi() {
+            // Called by toggleStartPause when pausing AIvsAI
+            if (!isAiVsAiRunning && !isGamePaused && !isGameOver) return; // Only stop if running or ensure paused state if triggered externally
+            isAiVsAiRunning = false;
+            isGamePaused = true; // Ensure pause state is correct
+            clearInterval(aiVsAiIntervalId);
+            aiVsAiIntervalId = null;
+
+            if (!isGameOver) {
+                aiSpeedSlider.disabled = false; // Re-enable slider when paused
+                fadeInElementText(resultTextDisplay, '一時停止中... 「スタート」で再開します。');
+            } else {
+                 aiSpeedSlider.disabled = true; // Keep disabled if game over
+            }
+            updateStartPauseButtonState(); // Update button text/style
+        }
+
+        function runAiVsAiRound() {
+             // Guards at the beginning
+             if (isGameOver || isGamePaused || !isAiVsAiRunning) {
+                 clearInterval(aiVsAiIntervalId);
+                 aiVsAiIntervalId = null;
+                 isAiVsAiRunning = false; // Ensure running state is false if stopped/paused/over
+                 if (!isGameOver) updateStartPauseButtonState(); // Reflect paused state unless game over
+                 return;
+             }
+
+             const ai1Hand = getAiHand(ai2History);
+             const ai2Hand = getAiHand(ai1History);
+
+             // Update histories (limit size)
+             ai1History.push(ai1Hand);
+             ai2History.push(ai2Hand);
+             const MAX_AI_HISTORY = 200;
+             if (ai1History.length > MAX_AI_HISTORY) ai1History.shift();
+             if (ai2History.length > MAX_AI_HISTORY) ai2History.shift();
+
+             playRound(ai1Hand, ai2Hand); // Process the round
+
+             // Schedule the next round *only if* still running and not paused/over
+             if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
+                 // Clear previous interval just in case, before setting a new one
+                 clearInterval(aiVsAiIntervalId);
+                 aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
+             } else {
+                  clearInterval(aiVsAiIntervalId); // Ensure interval is cleared if state changed
+                  aiVsAiIntervalId = null;
+             }
+        }
+
+        function updateSpeedDisplay(value) {
+            aiVsAiSpeed = parseInt(value, 10);
+            aiSpeedDisplay.textContent = aiVsAiSpeed;
+
+            // If running, restart the interval with the new speed
+            if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
+                clearInterval(aiVsAiIntervalId);
+                aiVsAiIntervalId = null; // Clear first
+                // Use setTimeout to avoid instant execution, allowing UI to update
+                setTimeout(() => {
+                    if (isAiVsAiRunning && !isGamePaused && !isGameOver) { // Check state again
+                         aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
+                    }
+                }, 50); // Small delay
+            }
+        }
+
+
+        // --- UI Updates ---
+        function updateScoreboard() {
+            let p1Label = playerNameDisplay.textContent.split(':')[0].trim() || 'Player 1';
+            let p2Label = aiNameDisplay.textContent.split(':')[0].trim() || 'Player 2';
+            fadeInElementText(scoreboardPlayerDisplay, `${p1Label}: ${formatNumber(scores.player1)}`);
+            fadeInElementText(scoreboardDrawDisplay, `あいこ: ${formatNumber(scores.draw)}`);
+            fadeInElementText(scoreboardAiDisplay, `${p2Label}: ${formatNumber(scores.player2)}`);
+
+            const diff = scores.player1 - scores.player2;
+            let diffText = '同点';
+            if (diff > 0) diffText = `${p1Label} が ${formatNumber(diff)} リード`;
+            else if (diff < 0) diffText = `${p2Label} が ${formatNumber(Math.abs(diff))} リード`;
+            fadeInElementText(scoreDifferenceDisplay, diffText);
+        }
+        function updateRoundInfo() {
+             const lengthDisplay = currentGameLength === Infinity ? '∞' : formatNumber(currentGameLength);
+             fadeInElementText(roundInfoDisplay, `ラウンド: ${formatNumber(currentRound)} / ${lengthDisplay}`);
+         }
+
+        function updateTurnIndicator() {
+             // Hide if not P vs P, or if game is paused/over
+             if (gameMode !== 'player-vs-player' || isGamePaused || isGameOver) {
+                 hideElement(turnIndicator);
+                 // Reset title if not P vs P
+                 if (gameMode !== 'player-vs-player') {
+                      playerControlsTitle.textContent = 'あなたの手を選択してください:';
+                 }
+                 return;
+             }
+
+             fadeInElement(turnIndicator); // Ensure visible
+             const turnPlayerName = (currentPlayerTurn === 'player1') ? playerNameDisplay.textContent.split(':')[0].trim() : aiNameDisplay.textContent.split(':')[0].trim();
+             const message = `${turnPlayerName}の番: 手を選択してください`;
+             fadeInElementText(turnIndicator, message);
+             // Update the controls title to reflect whose turn it is
+             playerControlsTitle.textContent = `${turnPlayerName}の番:`;
+         }
+
+         function getWaitingMessage() {
+             if (isGameOver) return resultTextDisplay.textContent; // Keep final message
+             if (isGamePaused) return '一時停止中... 「スタート」で再開します。';
+             if (currentRound === 0 && isGamePaused) return '「スタート」を押してゲームを開始してください。'; // Initial state before first start
+
+             if (gameMode === 'player-vs-ai') {
+                 return 'あなたの手を選んでください。';
+             } else if (gameMode === 'player-vs-player') {
+                 const turnPlayerName = (currentPlayerTurn === 'player1') ? playerNameDisplay.textContent.split(':')[0].trim() : aiNameDisplay.textContent.split(':')[0].trim();
+                 return `${turnPlayerName}の手を待っています...`;
+             } else if (gameMode === 'ai-vs-ai') {
+                 return '対戦中...'; // Or '「スタート」で開始/再開' if paused
+             }
+             return '結果を待っています...'; // Default fallback
+         }
+
+        function updateHandDisplays(hand1, hand2) {
+             // Use fade-in animation for reveals
+             playerHandDisplay.style.opacity = 0;
+             aiHandDisplay.style.opacity = 0;
+             playerHandDisplay.textContent = HAND_EMOJIS[hand1] || '?';
+             aiHandDisplay.textContent = HAND_EMOJIS[hand2] || '?';
+
+             // Force reflow before adding class
+             void playerHandDisplay.offsetWidth;
+             void aiHandDisplay.offsetWidth;
+
+             playerHandDisplay.classList.add('fade-in');
+             aiHandDisplay.classList.add('fade-in');
+
+             // Remove class after animation to allow re-triggering
+             playerHandDisplay.addEventListener('animationend', () => playerHandDisplay.classList.remove('fade-in'), { once: true });
+             aiHandDisplay.addEventListener('animationend', () => aiHandDisplay.classList.remove('fade-in'), { once: true });
+        }
+
+         function resetHandDisplays() {
+             // Simply reset text and ensure opacity is 1 for next state
+             clearTimeout(roundResetTimeoutId); // Clear pending resets
+             playerHandDisplay.classList.remove('fade-in'); // Remove animation class if present
+             aiHandDisplay.classList.remove('fade-in');
+             playerHandDisplay.style.opacity = 1; // Ensure visible
+             aiHandDisplay.style.opacity = 1;
+             playerHandDisplay.textContent = '?';
+             aiHandDisplay.textContent = '?';
+         }
+
+         function enablePlayerChoices(enable) {
+            // Enable/disable only the hand choice buttons
+             playerChoiceButtons.forEach(button => {
+                 button.disabled = !enable;
+             });
+             // Start/Pause and Quit buttons are handled separately by their state logic
+         }
+
+
+        // --- Chart Logic ---
+        function initializeChart() {
+            if (chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            const colors = getChartColors();
+
+            let p1Label = 'あなたの勝ち数', p2Label = 'AIの勝ち数';
+             if (gameMode === 'ai-vs-ai') { p1Label = 'AI 1の勝ち数'; p2Label = 'AI 2の勝ち数'; }
+             else if (gameMode === 'player-vs-player') { p1Label = 'あなたの勝ち数'; p2Label = 'ユーザー2の勝ち数'; }
+             const diffLabel = 'スコア差';
+
+
+            chartData = {
+                labels: [0], // Start at round 0
+                datasets: [
+                    { label: p1Label, data: [0], borderColor: colors.accent1, tension: 0, fill: false, yAxisID: 'y' },
+                    { label: p2Label, data: [0], borderColor: colors.accent2, tension: 0, fill: false, yAxisID: 'y' },
+                    { label: 'あいこ', data: [0], borderColor: colors.accent3, tension: 0, fill: false, yAxisID: 'y' },
+                    { label: diffLabel, data: [0], borderColor: colors.accent4, tension: 0, fill: false, borderDash: [5, 5], yAxisID: 'y1' }
+                ]
+            };
+
+            // Sync the toggle switch UI state
+            if(zoomToggleSwitch) zoomToggleSwitch.checked = isZoomEnabled;
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: gameMode === 'ai-vs-ai' ? 0 : 200 }, // Faster/no animation for AI vs AI
+                    scales: {
+                         y: {
+                             type: 'linear', display: true, position: 'left',
+                             grid: { color: colors.gridColor },
+                             ticks: { color: colors.labelColor, callback: value => formatNumber(value), beginAtZero: true },
+                             grace: '10%', // Add some padding above max value
+                             title: { display: true, text: '累計スコア', color: colors.titleColor }
+                         },
+                        y1: { // Score difference axis
+                            type: 'linear', display: true, position: 'right',
+                            grid: { drawOnChartArea: false }, // Don't draw grid lines for this axis
+                            ticks: { color: colors.labelColor, callback: value => formatNumber(value) },
+                            grace: '10%',
+                            title: { display: true, text: diffLabel, color: colors.titleColor }
+                        },
+                        x: {
+                            grid: { color: colors.gridColor },
+                            ticks: {
+                                color: colors.labelColor,
+                                callback: function(value) {
+                                    // Only show labels for integers, format large numbers
+                                    const label = this.getLabelForValue(value);
+                                     if (typeof label === 'number' && label % 1 === 0) {
+                                         return formatNumber(label);
+                                     }
+                                     // Only show first and last label if too many points? Needs logic.
+                                     return formatNumber(label); // Format all numeric labels for consistency
+                                },
+                                maxTicksLimit: 15, // Limit number of visible ticks
+                                autoSkip: true // Automatically skip labels if too crowded
+                             },
+                            title: { display: true, text: 'ラウンド数', color: colors.titleColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { color: colors.labelColor } },
+                        title: { display: true, text: '勝負の推移', color: colors.titleColor, font: { size: 16 } },
+                        zoom: { // Zoom plugin configuration
+                            pan: {
+                                enabled: isZoomEnabled,
+                                mode: 'xy',
+                                threshold: 5, // Pixels before panning starts
+                            },
+                            zoom: {
+                                wheel: { enabled: isZoomEnabled },
+                                pinch: { enabled: isZoomEnabled },
+                                mode: 'xy',
+                                drag: { enabled: false } // Disable drag-to-zoom
+                            }
+                        }
+                    },
+                    elements: {
+                        point:{ radius: 0 }, // No points on the line
+                        line: { borderWidth: 2 }
+                     },
+                    interaction: { // Tooltip interactions
+                        mode: 'index', // Show tooltip for all datasets at that index
+                        intersect: false // Show tooltip even if not directly hovering over line
+                    },
+                    hover: { // Hover interactions
+                         mode: 'nearest',
+                         intersect: false
+                    }
+                }
+            });
+            updateChartColors(); // Apply initial colors
+        }
+
+        function resetZoom() {
+            if (chartInstance) {
+                chartInstance.resetZoom();
+            }
+        }
+
+        function toggleZoomSwitch(isChecked) {
+            isZoomEnabled = isChecked;
+            enableZoom(isZoomEnabled);
+        }
+
+        function enableZoom(enable) {
+            if (!chartInstance) return;
+            chartInstance.options.plugins.zoom.zoom.wheel.enabled = enable;
+            chartInstance.options.plugins.zoom.zoom.pinch.enabled = enable;
+            chartInstance.options.plugins.zoom.pan.enabled = enable;
+            chartInstance.update('none'); // Update silently
+        }
+
+        function updateChart() {
+            if (!chartInstance || !chartData) return;
+
+            const scoreDiff = scores.player1 - scores.player2;
+
+            // Add new data points
+            chartData.labels.push(currentRound);
+            chartData.datasets[0].data.push(scores.player1);
+            chartData.datasets[1].data.push(scores.player2);
+            chartData.datasets[2].data.push(scores.draw);
+            chartData.datasets[3].data.push(scoreDiff);
+
+            // Limit data points for performance
+            const MAX_CHART_POINTS = 200; // Increased limit slightly
+            if (chartData.labels.length > MAX_CHART_POINTS) {
+                const shiftAmount = chartData.labels.length - MAX_CHART_POINTS;
+                chartData.labels.splice(0, shiftAmount); // Remove oldest labels
+                chartData.datasets.forEach(dataset => dataset.data.splice(0, shiftAmount)); // Remove oldest data
+            }
+
+            // Update chart without animation for performance, especially in AI vs AI
+            chartInstance.update('none');
+        }
+
+        // --- Notifications ---
+        function showNotification(message, showConfirm = false, isSuccess = false, autoHideDelay = 4000) {
+            if (notificationTimeoutId) { clearTimeout(notificationTimeoutId); notificationTimeoutId = null; }
+
+            // If already visible, quickly fade out before showing new one
+            if (isNotificationVisible) {
+                notificationArea.style.opacity = 0;
+                 // Use a short delay to allow fade out before changing content/fading in
+                 setTimeout(() => {
+                     _displayNotification(message, showConfirm, isSuccess, autoHideDelay);
+                 }, 150); // Adjust delay as needed
+            } else {
+                 _displayNotification(message, showConfirm, isSuccess, autoHideDelay);
+            }
+        }
+
+        function _displayNotification(message, showConfirm, isSuccess, autoHideDelay){
+             isNotificationVisible = false; // Reset flag
+             notificationMessage.textContent = message;
+             notificationArea.style.display = 'block';
+             notificationArea.style.opacity = 0;
+             void notificationArea.offsetWidth; // Force reflow
+
+             notificationArea.classList.add('fade-in');
+             isNotificationVisible = true;
+
+             // Auto hide if needed
+             if (!showConfirm && autoHideDelay > 0) {
+                 notificationTimeoutId = setTimeout(() => {
+                      if (isNotificationVisible) { hideNotification(); }
+                      notificationTimeoutId = null;
+                 }, autoHideDelay);
+             }
+        }
+
+        function hideNotification(immediately = false) {
+            if (!isNotificationVisible) return;
+            if (notificationTimeoutId) { clearTimeout(notificationTimeoutId); notificationTimeoutId = null; }
+
+            isNotificationVisible = false; // Set flag immediately
+
+            if (immediately) {
+                 notificationArea.style.opacity = 0;
+                 notificationArea.style.display = 'none';
+                 notificationArea.classList.remove('fade-in');
+            } else {
+                notificationArea.style.opacity = 0;
+                // Wait for fade out transition before hiding
+                setTimeout(() => {
+                    // Check flag again in case another notification was triggered quickly
+                    if (!isNotificationVisible) {
+                         notificationArea.style.display = 'none';
+                         notificationArea.classList.remove('fade-in');
+                    }
+                }, 300); // Match CSS transition duration
+            }
+        }
+
+
+        // --- Reset Logic ---
+         function resetScoresAndHistories() {
+             scores = { player1: 0, player2: 0, draw: 0 };
+             // Don't reset playerHistory here, keep it for AI learning across games
+             // Reset AI vs AI histories
+             ai1History = [];
+             ai2History = [];
+         }
+
+         function resetGameFullState() {
+             resetScoresAndHistories();
+             currentRound = 0;
+             isGameOver = false;
+             isGamePaused = true; // Reset to paused state initially
+             isAiVsAiRunning = false; // Reset AI running state
+             currentPlayerTurn = 'player1';
+             player1HandChoice = null;
+             clearTimeout(roundResetTimeoutId);
+             clearTimeout(notificationTimeoutId);
+             clearInterval(aiVsAiIntervalId); // Ensure AI interval is cleared
+             aiVsAiIntervalId = null;
+         }
+
+        // --- Data Persistence ---
+        function saveGameData() {
+             // Save only Player vs AI history
+             if (gameMode === 'player-vs-ai') {
+                 try {
+                    const MAX_SAVE_HISTORY = 1000; // Limit saved history size
+                    const historyToSave = playerHistory.slice(-MAX_SAVE_HISTORY);
+                    const dataToSave = { playerHistory: historyToSave };
+                    localStorage.setItem('rpsGameData', JSON.stringify(dataToSave));
+                 } catch (e) {
+                     console.error("Error saving game data:", e);
+                     // Handle potential storage errors (e.g., quota exceeded)
+                 }
+             }
+        }
+        function loadGameData() {
+             try {
+                const savedData = localStorage.getItem('rpsGameData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    const MAX_LOAD_HISTORY = 1000; // Limit loaded history size
+                    // Ensure loaded data is an array
+                    playerHistory = Array.isArray(parsedData.playerHistory) ? parsedData.playerHistory.slice(-MAX_LOAD_HISTORY) : [];
+                    console.log(`Loaded last ${playerHistory.length} player moves for AI learning.`);
+                } else {
+                    playerHistory = [];
+                }
+             } catch (e) {
+                 console.error("Error loading game data:", e);
+                 playerHistory = []; // Reset history on error
+                 // Optionally clear corrupted data: localStorage.removeItem('rpsGameData');
+             }
+        }
+
+        // --- Utility Functions ---
+        function formatNumber(num) {
+            if (typeof num !== 'number' || !isFinite(num)) { // Check for finite numbers
+                if (num === Infinity) return '∞';
+                if (isNaN(num)) return '?'; // Handle NaN
+                return num ? String(num) : '0'; // Handle null/undefined/zero
+            }
+
+            const sign = num < 0 ? '-' : '';
+            let absNum = Math.abs(num);
+
+            // Handle very large numbers beyond standard units
+            const googol = 1e100;
+            if (absNum >= googol) {
+                 // Scientific notation might be better here, but sticking to custom large units
+                 // Find the largest unit smaller than or equal to the number
+                 let unitKey = null;
+                 for (const key of UNIT_KEYS.reverse()) { // Iterate smallest to largest exponent for large numbers
+                     if (absNum >= Math.pow(10, key)) {
+                         unitKey = key;
+                         break; // Found the right magnitude
+                     }
+                 }
+                  UNIT_KEYS.reverse(); // Put it back in descending order for general use
+
+                 if (unitKey) {
+                    const value = absNum / Math.pow(10, unitKey);
+                    return sign + value.toFixed(2).replace(/(\.0+|(?<=\.\d)0+)$/, '') + UNITS[unitKey];
+                 } else {
+                     // Fallback for numbers larger than defined units, use scientific
+                     return sign + absNum.toExponential(2);
+                 }
+            }
+
+             // Handle numbers within defined units (K, M, B...)
+            for (const key of UNIT_KEYS) { // UNIT_KEYS is sorted descending
+                const threshold = Math.pow(10, key);
+                if (absNum >= threshold) {
+                    const value = absNum / threshold;
+                    let formattedNum;
+                    // Adjust precision based on value size relative to threshold
+                    if (value < 10) { formattedNum = value.toFixed(2); }
+                    else if (value < 100) { formattedNum = value.toFixed(1); }
+                    else { formattedNum = value.toFixed(0); } // >= 100 threshold units, no decimals
+                    // Remove trailing zeros and decimal point if possible
+                    formattedNum = formattedNum.replace(/(\.0+|(?<=\.\d)0+)$/, '');
+                    return sign + formattedNum + UNITS[key];
+                }
+            }
+
+            // Handle numbers less than 1000 (no unit)
+             if (absNum < 1000) {
+                 // Use Intl.NumberFormat for locale-specific formatting (e.g., commas)
+                 // However, for consistency with large number formatting (no commas), just return string
+                 // Consider adding commas later if needed: return sign + absNum.toLocaleString(undefined, { maximumFractionDigits: 0 });
+                 return sign + absNum.toString();
+            }
+
+             return sign + absNum.toString(); // Fallback shouldn't be reached if logic is correct
+        }
+
+         function fadeInElement(element) {
+             if (!element) return;
+             // Ensure it's not already visible or fading in to prevent glitches
+             if (element.style.display !== 'none' && element.style.opacity !== '0' && !element.classList.contains('fade-in')) {
+                  // If it's already fully visible, do nothing
+                 if (element.style.opacity === '1') return;
+             }
+
+             element.classList.remove('initially-hidden'); // Remove if present
+             const displayStyle = element.classList.contains('zoom-controls') || element.id === 'player-controls' || element.id === 'ai-vs-ai-controls' ? 'flex' : 'block'; // Adjust display based on element type
+             element.style.display = displayStyle;
+             element.style.opacity = 0; // Start transparent
+             void element.offsetWidth; // Trigger reflow
+
+             element.classList.add('fade-in');
+
+             // Use a flag or check class to prevent multiple listeners
+             const animationEndHandler = () => {
+                 if (element.classList.contains('fade-in')) { // Check if still fading in
+                     element.classList.remove('fade-in');
+                     element.style.opacity = 1; // Ensure final opacity is 1
+                 }
+                 // Remove the listener itself
+                 element.removeEventListener('animationend', animationEndHandler);
+             };
+             element.addEventListener('animationend', animationEndHandler, { once: true });
+
+             // Fallback timer in case animationend doesn't fire (e.g., element hidden before animation ends)
+             setTimeout(() => {
+                  if (element.classList.contains('fade-in')) { // If still fading after expected duration
+                       element.classList.remove('fade-in');
+                       element.style.opacity = 1;
+                       element.removeEventListener('animationend', animationEndHandler); // Clean up listener
+                  }
+             }, 650); // Slightly longer than animation duration
+         }
+
+        function hideElement(element) {
+            if (!element) return;
+            // Check if already hidden
+            if (element.style.display === 'none') return;
+
+            element.style.opacity = 0;
+            element.classList.remove('fade-in'); // Remove fade-in class if present
+
+            // Use setTimeout to hide after fade-out transition (if any applied via CSS)
+            // If no transition, this hides immediately after setting opacity to 0
+            // Use a standard delay slightly longer than typical transitions
+            setTimeout(() => {
+                 // Check opacity again in case it was faded back in quickly
+                 if (element.style.opacity === '0') {
+                      element.style.display = 'none';
+                 }
+            }, 300); // Match typical transition duration
+        }
+
+         function fadeInElementText(element, text) {
+             if (!element) return;
+             // Avoid update if text is the same and element is visible
+             const isVisible = element.style.display !== 'none' && element.style.opacity !== '0';
+             if (element.textContent === text && isVisible) return;
+
+             if (isVisible) {
+                 // Smooth fade out, change text, fade in
+                 element.style.transition = 'opacity 0.15s ease-out';
+                 element.style.opacity = 0;
+                 setTimeout(() => {
+                     element.textContent = text;
+                      // Ensure display is not none before fading in
+                     if (element.style.display === 'none') element.style.display = '';
+                     element.style.opacity = 1;
+                     // Remove transition after it's done to avoid affecting other style changes
+                     setTimeout(() => element.style.transition = '', 150);
+                 }, 150);
+             } else {
+                 // If element is hidden, just set the text and rely on fadeInElement to show it
+                 element.textContent = text;
+                 // Ensure opacity is 0 if hidden, ready for fadeInElement
+                 if (element.style.display === 'none') {
+                      element.style.opacity = 0;
+                 }
+             }
+         }
+
+    </script>
+</body>
+</html>
