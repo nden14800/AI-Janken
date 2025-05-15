@@ -9,7 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Sans から Roboto に変更 -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* --- Color Variables --- */
         :root {
@@ -75,7 +76,8 @@
         }
 
         body {
-            font-family: 'Google Sans', sans-serif;
+            /* Google Sans から Roboto に変更 */
+            font-family: 'Roboto', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -104,7 +106,8 @@
 
         /* Apply transitions to all relevant elements for smooth theme changes */
         h1, h2, h3, p, button, label, span, div, input, select, #scoreboard div, #game-display div, #player-controls button, #ai-vs-ai-controls > div, #ai-vs-ai-controls button, #chart-container, #round-info, #result-text, #turn-indicator, .zoom-controls button, .zoom-controls span {
-            font-family: 'Google Sans', sans-serif;
+            /* Google Sans から Roboto に変更 */
+            font-family: 'Roboto', sans-serif;
             color: var(--text-color);
             animation: fadeIn 0.6s ease-out forwards;
             opacity: 0;
@@ -502,8 +505,8 @@
     </div>
 
     <script>
-        // Chart.js のデフォルトフォントを設定
-        Chart.defaults.font.family = "'Google Sans', sans-serif";
+        // Chart.js のデフォルトフォントを設定 (Google Sans から Roboto に変更)
+        Chart.defaults.font.family = "'Roboto', sans-serif";
 
         const HANDS = ['rock', 'paper', 'scissors'];
         const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
@@ -1076,7 +1079,13 @@
              if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
                  // Clear previous interval just in case, before setting a new one
                  clearInterval(aiVsAiIntervalId);
-                 aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
+                 aiVsAiIntervalId = null; // Clear first
+                 // Use setTimeout to avoid instant execution, allowing UI to update
+                 setTimeout(() => {
+                     if (isAiVsAiRunning && !isGamePaused && !isGameOver) { // Check state again
+                         aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
+                    }
+                 }, 50); // Small delay
              } else {
                   clearInterval(aiVsAiIntervalId); // Ensure interval is cleared if state changed
                   aiVsAiIntervalId = null;
