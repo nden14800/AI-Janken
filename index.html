@@ -39,9 +39,9 @@
             --accent2-color: rgb(255, 99, 132); /* Player 2 / AI / User 2 */
             --accent3-color: rgb(201, 203, 207); /* Draw */
             --accent4-color: rgb(153, 102, 255); /* Score Difference */
-            --hand-rock-color: rgb(255, 159, 64);  /* Orange for Rock */
-            --hand-paper-color: rgb(54, 162, 235); /* Blue for Paper */
-            --hand-scissors-color: rgb(255, 205, 86);/* Yellow for Scissors */
+            --hand-rock-color: rgb(255, 159, 64);
+            --hand-paper-color: rgb(54, 162, 235);
+            --hand-scissors-color: rgb(255, 205, 86);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -283,11 +283,11 @@
             transition: color 0.3s ease;
         }
 
-        #chart-container, #hands-chart-container { /* Shared styles for chart containers */
+        #chart-container, #hands-chart-container {
             width: 100%;
             max-width: 100%;
-            height: 400px; /* <<< MODIFIED: Unified height */
-            margin: 25px auto; /* <<< MODIFIED: Unified margin */
+            height: 400px;
+            margin: 25px auto;
             background-color: var(--container-bg);
             border-radius: 8px;
             padding: 15px;
@@ -582,6 +582,7 @@
         Chart.defaults.font.family = "'Roboto', sans-serif";
 
         const HANDS = ['rock', 'paper', 'scissors'];
+        const HAND_EMOJIS_ARRAY = ['✊', '✋', '✌️']; // For bar chart labels
         const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
         const WIN_CONDITIONS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
         const UNITS = {
@@ -606,9 +607,9 @@
         let ai2History = [];
 
         let resultsChartInstance = null;
-        let handsChartInstance = null;
+        let handsChartInstance = null; // Now for Bar Chart
         let resultsChartData = { labels: [], datasets: [] };
-        let handsChartData = { labels: [], datasets: [] };
+        // handsChartData is not used in the same way for bar chart, data is set directly in instance
 
         let aiVsAiIntervalId = null;
         let aiVsAiSpeed = 10;
@@ -623,7 +624,7 @@
         let roundResetTimeoutId = null;
 
         let isResultsZoomEnabled = true;
-        let isHandsZoomEnabled = true;
+        let isHandsZoomEnabled = true; // Will be less useful for bar chart
 
 
         const modeSelectionDiv = document.getElementById('mode-selection');
@@ -702,8 +703,8 @@
                 updateChartColors(resultsChartInstance);
                 resultsChartInstance.update();
             }
-            if (handsChartInstance) {
-                updateChartColors(handsChartInstance);
+            if (handsChartInstance) { // For Bar chart
+                updateChartColors(handsChartInstance, true); // Pass isBarChart = true
                 handsChartInstance.update();
             }
             updateStartPauseButtonState();
@@ -725,27 +726,30 @@
             };
         }
 
-         function updateChartColors(chart) {
+        // Modified to handle bar chart dataset colors
+         function updateChartColors(chart, isBarChart = false) {
              if (!chart) return;
              const colors = getChartColors();
 
-             chart.data.datasets.forEach(dataset => {
-                 if (dataset.label.includes('あなた') || dataset.label.includes('AI 1') || dataset.label.includes('P1')) {
-                     if (dataset.label.includes('グー')) dataset.borderColor = colors.handRock;
-                     else if (dataset.label.includes('パー')) dataset.borderColor = colors.handPaper;
-                     else if (dataset.label.includes('チョキ')) dataset.borderColor = colors.handScissors;
-                     else dataset.borderColor = colors.accent1;
-                 } else if (dataset.label.includes('AI') || dataset.label.includes('ユーザー2') || dataset.label.includes('P2')) {
-                     if (dataset.label.includes('グー')) dataset.borderColor = colors.handRock;
-                     else if (dataset.label.includes('パー')) dataset.borderColor = colors.handPaper;
-                     else if (dataset.label.includes('チョキ')) dataset.borderColor = colors.handScissors;
-                     else dataset.borderColor = colors.accent2;
-                 } else if (dataset.label.includes('あいこ')) {
-                     dataset.borderColor = colors.accent3;
-                 } else if (dataset.label.includes('スコア差')) {
-                     dataset.borderColor = colors.accent4;
-                 }
-             });
+            if (isBarChart) {
+                chart.data.datasets.forEach((dataset, index) => {
+                    // For bar chart, P1 and P2 datasets will have specific colors
+                    if (dataset.label.includes('あなた') || dataset.label.includes('AI 1') || dataset.label.includes('P1')) {
+                        dataset.backgroundColor = colors.accent1; // Or more specific if needed
+                        dataset.borderColor = colors.accent1;
+                    } else if (dataset.label.includes('AI') || dataset.label.includes('ユーザー2') || dataset.label.includes('P2')) {
+                        dataset.backgroundColor = colors.accent2;
+                        dataset.borderColor = colors.accent2;
+                    }
+                });
+            } else { // Line chart (results chart)
+                 chart.data.datasets.forEach(dataset => {
+                     if (dataset.label.includes('あなた') || dataset.label.includes('AI 1')) { dataset.borderColor = colors.accent1; }
+                     else if (dataset.label.includes('AI') || dataset.label.includes('ユーザー2')) { dataset.borderColor = colors.accent2; }
+                     else if (dataset.label.includes('あいこ')) { dataset.borderColor = colors.accent3; }
+                     else if (dataset.label.includes('スコア差')) { dataset.borderColor = colors.accent4; }
+                 });
+            }
 
 
              if (chart.options.scales.x) {
@@ -758,7 +762,7 @@
                 chart.options.scales.y.ticks.color = colors.labelColor;
                 chart.options.scales.y.title.color = colors.titleColor;
              }
-              if (chart.options.scales.y1) {
+              if (chart.options.scales.y1 && !isBarChart) { // y1 only for results line chart
                  chart.options.scales.y1.grid.color = colors.gridColor;
                  chart.options.scales.y1.ticks.color = colors.labelColor;
                  chart.options.scales.y1.title.color = colors.titleColor;
@@ -811,9 +815,9 @@
 
 
             isResultsZoomEnabled = true;
-            isHandsZoomEnabled = true;
+            isHandsZoomEnabled = true; // Keep for consistency, though less useful for bar
             initializeResultsChart();
-            initializeHandsChart();
+            initializeHandsBarChart(); // Changed to bar chart init
             fadeInElement(resultsZoomControlsDiv);
             fadeInElement(handsZoomControlsDiv);
             resultsZoomToggleSwitch.checked = isResultsZoomEnabled;
@@ -962,7 +966,7 @@
             fadeInElementText(resultTextDisplay, winnerName);
 
             updateResultsChart();
-            updateHandsChart();
+            updateHandsBarChart(); // Changed to update bar chart
             if (gameMode === 'player-vs-ai') saveGameData();
 
             checkGameEnd();
@@ -1056,9 +1060,9 @@
              fadeInElement(modeSelectionDiv);
              hideElement(gameLengthSelectionDiv);
              if (resultsChartInstance) { resultsChartInstance.destroy(); resultsChartInstance = null; }
-             if (handsChartInstance) { handsChartInstance.destroy(); handsChartInstance = null; }
+             if (handsChartInstance) { handsChartInstance.destroy(); handsChartInstance = null; } // For bar chart
              resultsChartData = { labels: [], datasets: [] };
-             handsChartData = { labels: [], datasets: [] };
+             // handsChartData is not needed for bar chart state in this way
              resetGameFullState();
              gameMode = '';
              updateScoreboard();
@@ -1235,7 +1239,7 @@
             updateChartColors(resultsChartInstance);
         }
 
-        function initializeHandsChart() {
+        function initializeHandsBarChart() { // <<< RENAMED and MODIFIED for Bar Chart
             if (handsChartInstance) handsChartInstance.destroy();
             const ctx = document.getElementById('handsChart').getContext('2d');
             const colors = getChartColors();
@@ -1243,37 +1247,61 @@
             let p1Name = playerNameDisplay.textContent.split(':')[0].trim() || 'Player 1';
             let p2Name = aiNameDisplay.textContent.split(':')[0].trim() || 'Player 2';
 
-            handsChartData = {
-                labels: [0],
+            const initialP1Data = [scores.player1Hands.rock, scores.player1Hands.paper, scores.player1Hands.scissors];
+            const initialP2Data = [scores.player2Hands.rock, scores.player2Hands.paper, scores.player2Hands.scissors];
+
+            // Bar chart data structure
+            const data = {
+                labels: HAND_EMOJIS_ARRAY, // ['✊', '✋', '✌️']
                 datasets: [
-                    { label: `${p1Name} グー`, data: [0], borderColor: colors.handRock, tension: 0.1, fill: false, yAxisID: 'y' },
-                    { label: `${p1Name} パー`, data: [0], borderColor: colors.handPaper, tension: 0.1, fill: false, yAxisID: 'y' },
-                    { label: `${p1Name} チョキ`, data: [0], borderColor: colors.handScissors, tension: 0.1, fill: false, yAxisID: 'y' },
-                    { label: `${p2Name} グー`, data: [0], borderColor: colors.handRock, borderDash: [5, 5], tension: 0.1, fill: false, yAxisID: 'y' },
-                    { label: `${p2Name} パー`, data: [0], borderColor: colors.handPaper, borderDash: [5, 5], tension: 0.1, fill: false, yAxisID: 'y' },
-                    { label: `${p2Name} チョキ`, data: [0], borderColor: colors.handScissors, borderDash: [5, 5], tension: 0.1, fill: false, yAxisID: 'y' },
+                    {
+                        label: p1Name,
+                        data: initialP1Data,
+                        backgroundColor: colors.accent1, // Use accent1 for P1 bars
+                        borderColor: colors.accent1,
+                        borderWidth: 1
+                    },
+                    {
+                        label: p2Name,
+                        data: initialP2Data,
+                        backgroundColor: colors.accent2, // Use accent2 for P2 bars
+                        borderColor: colors.accent2,
+                        borderWidth: 1
+                    }
                 ]
             };
-             if(handsZoomToggleSwitch) handsZoomToggleSwitch.checked = isHandsZoomEnabled;
+
+             if(handsZoomToggleSwitch) handsZoomToggleSwitch.checked = isHandsZoomEnabled; // Still set, though zoom is less useful
             handsChartInstance = new Chart(ctx, {
-                type: 'line', data: handsChartData,
+                type: 'bar', // <<< CHANGED to 'bar'
+                data: data,
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    animation: { duration: gameMode === 'ai-vs-ai' ? 0 : 200 },
+                    animation: { duration: 200 }, // Animation for bar updates
                     scales: {
-                         y: { type: 'linear', display: true, position: 'left', grid: { color: colors.gridColor }, ticks: { color: colors.labelColor, callback: value => formatNumber(value), beginAtZero: true, stepSize: 1 }, grace: '10%', title: { display: true, text: '選択回数', color: colors.titleColor } },
-                        x: { grid: { color: colors.gridColor }, ticks: { color: colors.labelColor, callback: function(value) { const label = this.getLabelForValue(value); if (typeof label === 'number' && label % 1 === 0) { return formatNumber(label); } return formatNumber(label); }, maxTicksLimit: 15, autoSkip: true }, title: { display: true, text: 'ラウンド数', color: colors.titleColor } }
+                         y: {
+                            beginAtZero: true,
+                            grid: { color: colors.gridColor },
+                            ticks: { color: colors.labelColor, stepSize: 1, callback: value => formatNumber(value) }, // Ensure integer ticks
+                            title: { display: true, text: '選択回数', color: colors.titleColor }
+                         },
+                        x: { // X-axis shows hands (Rock, Paper, Scissors)
+                            grid: { color: colors.gridColor },
+                            ticks: { color: colors.labelColor }
+                        }
                     },
                     plugins: {
                         legend: { position: 'top', labels: { color: colors.labelColor } },
-                        title: { display: true, text: '各手の選択回数の推移', color: colors.titleColor, font: { size: 16 } },
-                        zoom: { pan: { enabled: isHandsZoomEnabled, mode: 'xy', threshold: 5 }, zoom: { wheel: { enabled: isHandsZoomEnabled }, pinch: { enabled: isHandsZoomEnabled }, mode: 'xy', drag: { enabled: false } } }
+                        title: { display: true, text: '各手の合計選択回数', color: colors.titleColor, font: { size: 16 } },
+                        zoom: { // Zoom might not be very useful for a fixed bar chart
+                            pan: { enabled: isHandsZoomEnabled, mode: 'y', threshold: 5 }, // Pan Y only
+                            zoom: { wheel: { enabled: isHandsZoomEnabled, mode: 'y' }, pinch: { enabled: isHandsZoomEnabled, mode: 'y' }, drag: { enabled: false } }
+                        }
                     },
-                    elements: { point:{ radius: 0 }, line: { borderWidth: 2 } },
-                    interaction: { mode: 'index', intersect: false }, hover: { mode: 'nearest', intersect: false }
+                    indexAxis: 'x', // Bars are vertical (categories on x-axis)
                 }
             });
-            updateChartColors(handsChartInstance);
+            updateChartColors(handsChartInstance, true); // Pass isBarChart = true
         }
 
 
@@ -1287,14 +1315,18 @@
                 enableZoom(resultsChartInstance, isResultsZoomEnabled);
             } else if (chartId === 'handsChart') {
                 isHandsZoomEnabled = isChecked;
-                enableZoom(handsChartInstance, isHandsZoomEnabled);
+                enableZoom(handsChartInstance, isHandsZoomEnabled, true); // Pass isBarChart for Y-axis only zoom
             }
         }
-        function enableZoom(chart, enable) {
+        function enableZoom(chart, enable, isBarChart = false) {
             if (!chart) return;
+            const zoomMode = isBarChart ? 'y' : 'xy';
             chart.options.plugins.zoom.zoom.wheel.enabled = enable;
+            chart.options.plugins.zoom.zoom.wheel.mode = zoomMode;
             chart.options.plugins.zoom.zoom.pinch.enabled = enable;
+            chart.options.plugins.zoom.zoom.pinch.mode = zoomMode;
             chart.options.plugins.zoom.pan.enabled = enable;
+            chart.options.plugins.zoom.pan.mode = zoomMode;
             chart.update('none');
         }
 
@@ -1315,23 +1347,20 @@
             resultsChartInstance.update('none');
         }
 
-        function updateHandsChart() {
-            if (!handsChartInstance || !handsChartData) return;
-            handsChartData.labels.push(currentRound);
-            handsChartData.datasets[0].data.push(scores.player1Hands.rock);
-            handsChartData.datasets[1].data.push(scores.player1Hands.paper);
-            handsChartData.datasets[2].data.push(scores.player1Hands.scissors);
-            handsChartData.datasets[3].data.push(scores.player2Hands.rock);
-            handsChartData.datasets[4].data.push(scores.player2Hands.paper);
-            handsChartData.datasets[5].data.push(scores.player2Hands.scissors);
+        function updateHandsBarChart() { // <<< RENAMED and MODIFIED for Bar Chart
+            if (!handsChartInstance) return;
 
-            const MAX_CHART_POINTS = 200;
-            if (handsChartData.labels.length > MAX_CHART_POINTS) {
-                const shiftAmount = handsChartData.labels.length - MAX_CHART_POINTS;
-                handsChartData.labels.splice(0, shiftAmount);
-                handsChartData.datasets.forEach(dataset => dataset.data.splice(0, shiftAmount));
-            }
-            handsChartInstance.update('none');
+            handsChartInstance.data.datasets[0].data = [
+                scores.player1Hands.rock,
+                scores.player1Hands.paper,
+                scores.player1Hands.scissors
+            ];
+            handsChartInstance.data.datasets[1].data = [
+                scores.player2Hands.rock,
+                scores.player2Hands.paper,
+                scores.player2Hands.scissors
+            ];
+            handsChartInstance.update(); // Use default animation or 'none' if preferred
         }
 
 
@@ -1436,7 +1465,7 @@
             if (isDisplayed && currentOpacity > 0 && currentOpacity < 1 && computedStyle.animationName && computedStyle.animationName.includes('fadeIn') && !element.classList.contains('initially-hidden-triggered-by-js')) { return; }
             element.classList.remove('initially-hidden'); element.classList.add('initially-hidden-triggered-by-js');
             
-            let displayStyle = 'block'; // Default
+            let displayStyle = 'block';
             if (element.classList.contains('zoom-controls') || element.id === 'player-controls' || element.id === 'ai-vs-ai-controls') {
                 displayStyle = 'flex';
             } else if (element.id === 'hands-stats') {
