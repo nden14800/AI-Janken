@@ -4,1505 +4,655 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>じゃんけんAI</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Color Variables --- */
         :root {
-            --bg-color: #f0f0f0;
-            --text-color: #333;
-            --container-bg: #fff;
-            --container-shadow: rgba(0,0,0,0.1);
-            --border-color: #eee;
-            --button-bg: #4285F4;
-            --button-text: white;
-            --button-hover-bg: #357ae8;
-            --button-disabled-bg: #ccc;
-            --button-disabled-text: #666;
-            --secondary-text-color: #555;
-            --chart-grid-color: rgba(0, 0, 0, 0.1);
-            --chart-label-color: #666;
-            --chart-title-color: #333;
-            --notification-bg: rgba(0, 0, 0, 0.8);
-            --notification-text: white;
-            --notification-button-bg: #555;
-            --notification-button-hover-bg: #777;
-            --danger-button-bg: #f44336;
-            --danger-button-hover-bg: #d32f2f;
-            --warning-button-bg: #ff9800;
-            --warning-button-hover-bg: #fb8c00;
-            --accent1-color: rgb(75, 192, 192); /* Player 1 / You */
-            --accent2-color: rgb(255, 99, 132); /* Player 2 / AI / User 2 */
-            --accent3-color: rgb(201, 203, 207); /* Draw */
-            --accent4-color: rgb(153, 102, 255); /* Score Difference */
-            --hand-rock-color: rgb(255, 159, 64);
-            --hand-paper-color: rgb(54, 162, 235);
-            --hand-scissors-color: rgb(255, 205, 86);
+            --bg-color: #f4f7f9;
+            --text-color: #2c3e50;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0, 0, 0, 0.05);
+            --border-color: #e3e8ee;
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --danger-color: #e74c3c;
+            --danger-hover: #c0392b;
+            --warning-color: #f39c12;
+            --warning-hover: #e67e22;
+            --disabled-bg: #bdc3c7;
+            --disabled-text: #7f8c8d;
+            --secondary-text: #7f8c8d;
+            --accent1-color: #2980b9;
+            --accent2-color: #c0392b;
+            --accent3-color: #7f8c8d;
+            --win-glow: rgba(46, 204, 113, 0.3);
+            --lose-glow: rgba(231, 76, 60, 0.3);
+            --draw-glow: rgba(149, 165, 166, 0.3);
+            --nav-bg: #ffffff;
+            --nav-icon-color: #7f8c8d;
+            --nav-icon-active-color: var(--primary-color);
+            --nav-width-collapsed: 60px;
+            --nav-width-expanded: 220px;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #121212;
+                --bg-color: #1a1a2e;
                 --text-color: #e0e0e0;
-                --container-bg: #1e1e1e;
-                --container-shadow: rgba(255, 255, 255, 0.1);
-                --border-color: #333;
-                --button-bg: #5c8fef;
-                --button-text: #121212;
-                --button-hover-bg: #7faaf0;
-                --button-disabled-bg: #444;
-                --button-disabled-text: #888;
-                --secondary-text-color: #aaa;
-                --chart-grid-color: rgba(255, 255, 255, 0.1);
-                --chart-label-color: #aaa;
-                --chart-title-color: #e0e0e0;
-                --notification-bg: rgba(230, 230, 230, 0.9);
-                --notification-text: #121212;
-                --notification-button-bg: #bbb;
-                --notification-button-hover-bg: #ccc;
-                --danger-button-bg: #ef5350;
-                --danger-button-hover-bg: #e57373;
-                --warning-button-bg: #ffa726;
-                --warning-button-hover-bg: #ffb74d;
+                --card-bg: #242444;
+                --card-shadow: rgba(0, 0, 0, 0.2);
+                --border-color: #3a3a5e;
+                --primary-color: #4a90e2;
+                --primary-hover: #63a4ff;
+                --danger-color: #e94b3c;
+                --danger-hover: #ff6b5a;
+                --warning-color: #f2994a;
+                --warning-hover: #f5b784;
+                --disabled-bg: #4f4f6b;
+                --disabled-text: #a0a0b8;
+                --secondary-text: #a0a0b8;
+                --accent1-color: #4a90e2;
+                --accent2-color: #e94b3c;
+                --accent3-color: #a0a0b8;
+                --win-glow: rgba(80, 227, 194, 0.2);
+                --lose-glow: rgba(233, 75, 60, 0.2);
+                --draw-glow: rgba(160, 160, 184, 0.2);
+                --nav-bg: #1e1e3f;
+                --nav-icon-color: #a0a0b8;
+                --nav-icon-active-color: var(--primary-color);
             }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { 0% { transform: scale(0.7); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1.0); opacity: 1; } }
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            animation: fadeIn 0.5s ease-out;
-            min-height: 100vh;
-            box-sizing: border-box;
-            transition: background-color 0.3s ease, color 0.3s ease;
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
+        .app-container { display: flex; }
+        
+        #main-nav {
+            position: fixed; z-index: 100; background-color: var(--nav-bg);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: width 0.3s ease-in-out;
         }
-
-        .container {
-            background-color: var(--container-bg);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px var(--container-shadow);
-            width: 100%;
-            max-width: 900px;
-            box-sizing: border-box;
-            opacity: 0;
-            animation: fadeIn 0.5s ease-out forwards;
-            animation-delay: 0.2s;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        .nav-item {
+            display: flex; align-items: center; padding: 15px; cursor: pointer;
+            position: relative; overflow: hidden; color: var(--nav-icon-color);
         }
-
-        h1, h2, h3, p, button, label, span, div, input, select,
-        #scoreboard div, #game-display div,
-        #player-controls button, #ai-vs-ai-controls > div, #ai-vs-ai-controls button,
-        #chart-container, #hands-chart-container,
-        #round-info, #result-text, #turn-indicator,
-        .zoom-controls button, .zoom-controls span,
-        #hands-stats div
-         {
-            font-family: 'Roboto', sans-serif;
-            color: var(--text-color);
-            transition: color 0.3s ease, background-color 0.3s ease;
-        }
-
-        .container > h1, .container > #mode-selection > h2, .container > #mode-selection .mode-buttons button,
-        .container > #game-length-selection > h2, .container > #game-length-selection #game-length-buttons button,
-        #scoreboard > div,
-        #game-display > .player-area > div, #game-display > .ai-area > div, #game-display > div[style*="font-size: 1.5em"],
-        #round-info,
-        #hands-stats > div,
-        .zoom-controls > button, .zoom-controls > span
-        {
-            opacity: 0;
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-
-
-         button { color: var(--button-text); }
-         button:disabled { color: var(--button-disabled-text); }
-         #round-info, #ai-speed-display, .player-area div, .ai-area div, label, #ai-vs-ai-controls span, .zoom-controls span, #player-controls label,
-         #hands-stats label
-         {
-            color: var(--secondary-text-color);
-            transition: color 0.3s ease;
-         }
-         #result-text, #turn-indicator, #score-difference-display { color: var(--text-color); transition: color 0.3s ease;}
-         #player-score-display, #ai-score-display, #draw-score-display { font-weight: bold; transition: color 0.3s ease;}
-         #score-difference-display { font-weight: normal; transition: color 0.3s ease;}
-         #hands-stats span {font-weight: bold; transition: color 0.3s ease;}
-
-
-        .container > h1 { animation-delay: 0.3s; }
-        .container > #mode-selection > h2 { animation-delay: 0.4s; }
-        #mode-selection .mode-buttons button:nth-child(1) { animation-delay: 0.5s; }
-        #mode-selection .mode-buttons button:nth-child(2) { animation-delay: 0.55s; }
-        #mode-selection .mode-buttons button:nth-child(3) { animation-delay: 0.6s; }
-
-        #scoreboard div:nth-child(1) { animation-delay: 0.6s; }
-        #scoreboard div:nth-child(2) { animation-delay: 0.65s; }
-        #scoreboard div:nth-child(3) { animation-delay: 0.7s; }
-        #score-difference-display { animation-delay: 0.75s; }
-
-        #game-display > .player-area > div:first-child { animation-delay: 0.6s; }
-        #game-display > .player-area > .hand-display { animation-delay: 0.65s; }
-        #game-display > div[style*="font-size: 1.5em"] { animation-delay: 0.7s; }
-        #game-display > .ai-area > div:first-child { animation-delay: 0.75s; }
-        #game-display > .ai-area > .hand-display { animation-delay: 0.8s; }
-
-        #round-info { animation-delay: 0.85s; }
-        #hands-stats { animation-delay: 1.0s; }
-        #hands-stats div { animation-delay: 1.05s; }
-
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards !important;
-            opacity: 0;
-        }
-
-        .initially-hidden {
-            display: none;
-            opacity: 0;
-        }
-
-        button {
-            font-size: 1em;
-            padding: 10px 15px;
-            margin: 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
-        }
-        button:hover:not(:disabled) {
-            background-color: var(--button-hover-bg);
-        }
-        button:disabled {
-            background-color: var(--button-disabled-bg);
-            color: var(--button-disabled-text);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        #quit-button, #ai-quit-button {
-             background-color: var(--danger-button-bg);
-        }
-         #quit-button:hover:not(:disabled), #ai-quit-button:hover:not(:disabled) {
-             background-color: var(--danger-button-hover-bg);
-         }
-         #start-pause-button.paused, #ai-vs-ai-start-stop.paused {
-            background-color: var(--warning-button-bg);
-         }
-         #start-pause-button.paused:hover:not(:disabled), #ai-vs-ai-start-stop.paused:hover:not(:disabled) {
-            background-color: var(--warning-button-hover-bg);
-         }
-
-
-        .mode-buttons button, #game-length-buttons button {
-             min-width: 80px;
-             margin-bottom: 10px;
-        }
-
-        #game-area {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-             transition: border-color 0.3s ease;
-        }
-
-        #scoreboard {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            text-align: center;
-        }
-        #score-difference-display {
-            grid-column: 1 / -1;
-            margin-top: 10px;
-            font-size: 1em;
-            color: var(--secondary-text-color);
-        }
-
-        #game-display {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 30px;
-            min-height: 100px;
-        }
-
-        .player-area, .ai-area {
-            text-align: center;
-        }
-
-        .hand-display {
-            font-size: 3em;
-            min-width: 60px;
-            min-height: 60px;
-            display: inline-block;
-            line-height: 60px;
-            transition: opacity 0.3s ease;
-        }
-
-        #player-controls, #ai-vs-ai-controls {
-            text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        #player-controls > div, #ai-vs-ai-controls > div {
-             display: flex;
-             flex-wrap: wrap;
-             justify-content: center;
-             align-items: center;
-             gap: 10px;
-        }
-        #ai-vs-ai-controls label, #ai-vs-ai-controls input, #ai-vs-ai-controls span { color: var(--secondary-text-color); transition: color 0.3s ease;}
-        #turn-indicator {
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            min-height: 1.2em;
-            transition: color 0.3s ease;
-        }
-
-        #chart-container, #hands-chart-container {
-            width: 100%;
-            max-width: 100%;
-            height: 400px;
-            margin: 25px auto;
-            background-color: var(--container-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px var(--container-shadow);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        #resultsChart, #handsChart {
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        #hands-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.9em;
-        }
-        #hands-stats div {
-            padding: 8px;
-            background-color: var(--bg-color);
-            border-radius: 5px;
-        }
-        #hands-stats h4 {
-            margin-top: 0;
-            margin-bottom: 8px;
-            font-size: 1.1em;
-            color: var(--chart-title-color);
-        }
-        #hands-stats p {
-            margin: 4px 0;
-        }
-        #hands-stats .hand-rock { color: var(--hand-rock-color); }
-        #hands-stats .hand-paper { color: var(--hand-paper-color); }
-        #hands-stats .hand-scissors { color: var(--hand-scissors-color); }
-
-
-        #notification-area {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--notification-bg);
-            color: var(--notification-text);
-            padding: 15px 30px;
-            border-radius: 5px;
-            z-index: 1000;
-            text-align: center;
-            opacity: 0;
-            display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
-            cursor: pointer;
-        }
-        #notification-area.fade-in {
-             display: block;
-             animation: fadeIn 0.5s ease-out forwards;
-        }
-        #notification-area button {
-            background-color: var(--notification-button-bg);
-            color: var(--notification-text);
-            margin-top: 10px;
-             transition: background-color 0.3s ease;
-        }
-         #notification-area button:hover {
-            background-color: var(--notification-button-hover-bg);
-        }
-        #notification-message {
-            margin-bottom: 10px;
-            opacity: 1;
-            animation: none;
-            color: var(--notification-text);
-            transition: color 0.3s ease;
-        }
-
-        #ai-speed-slider {
-            width: 200px;
-            margin: 0 10px;
-            cursor: pointer;
-            accent-color: var(--button-bg);
-        }
-
-        .result-text {
-            font-weight: bold;
-            margin-top: 10px;
-            font-size: 1.2em;
-            color: var(--text-color);
-            transition: color 0.3s ease;
-            min-height: 1.5em;
-        }
-
-        #player-hand, #ai-hand {
-             opacity: 1;
-        }
-
-        input[type=range] {
-          -webkit-appearance: none; appearance: none;
-          width: 200px; height: 8px; background: var(--border-color);
-          outline: none; border-radius: 4px; transition: background 0.3s ease;
-          vertical-align: middle;
-        }
-        input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none; appearance: none;
-          width: 20px; height: 20px; background: var(--button-bg);
-          cursor: pointer; border-radius: 50%; transition: background 0.3s ease;
-        }
-        input[type=range]::-moz-range-thumb {
-          width: 20px; height: 20px; background: var(--button-bg);
-          cursor: pointer; border-radius: 50%; border: none; transition: background 0.3s ease;
-        }
-         input[type=range]::-moz-range-track {
-            background: var(--border-color); height: 8px; border-radius: 4px; transition: background 0.3s ease;
-         }
-
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 44px;
-          height: 24px;
-          vertical-align: middle;
-        }
+        .nav-item:hover { background-color: color-mix(in srgb, var(--nav-bg) 90%, var(--primary-color)); }
+        .nav-item.active { color: var(--nav-icon-active-color); }
+        .nav-item .icon-wrapper { width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
+        .nav-item-label { margin-left: 20px; white-space: nowrap; animation: fadeIn 0.3s forwards; display: none; }
+        
+        #main-content { width: 100%; padding: 20px; box-sizing: border-box; animation: fadeIn 0.5s ease-out; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+        
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px var(--card-shadow); animation: fadeIn 0.6s; }
+        #setup-card, #settings-card { max-width: 600px; margin: 20px auto; }
+        .card h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .card .card-description { margin-top: -5px; margin-bottom: 20px; color: var(--secondary-text); }
+        
+        .content-grid { display: grid; gap: 25px; }
+        
+        #game-blocker { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.2); backdrop-filter: blur(4px); z-index: 50; display: flex; justify-content: center; align-items: center; text-align: center; padding: 20px; border-radius: 12px; color: var(--text-color); font-size: 1.2em; font-weight: 500; display: none; }
+        #game-blocker.active { display: flex; animation: fadeIn 0.3s; }
+        #game-play-card { position: relative; }
+        
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-          position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-          background-color: #ccc; transition: .4s;
-        }
-        .slider:before {
-          position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-          background-color: white; transition: .4s;
-        }
-        input:checked + .slider { background-color: var(--button-bg); }
-        input:focus + .slider { box-shadow: 0 0 1px var(--button-bg); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(20px); }
-        .slider.round { border-radius: 24px; }
-        .slider.round:before { border-radius: 50%; }
 
-        .zoom-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
+        @media (min-width: 768px) {
+            .app-container { padding-left: var(--nav-width-collapsed); transition: padding-left 0.3s ease-in-out; }
+            #main-nav { width: var(--nav-width-collapsed); height: 100vh; top: 0; left: 0; display: flex; flex-direction: column; padding-top: 20px; }
+            #main-nav:hover { width: var(--nav-width-expanded); }
+            #main-nav:hover .nav-item-label { display: inline; }
+            .nav-item.active::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; background-color: var(--nav-icon-active-color); border-radius: 0 4px 4px 0; }
+            .content-grid.show-data-panel { grid-template-columns: 1fr 1fr; }
         }
-        .zoom-controls > span {
-            display: inline-flex;
-            align-items: center;
+
+        @media (max-width: 767px) {
+            .app-container { padding-top: 60px; }
+            #main-nav { width: 100vw; height: 60px; top: 0; left: 0; display: flex; justify-content: space-around; align-items: center; }
+            .nav-item { padding: 5px; flex-grow: 1; justify-content: center; }
+            .nav-item-label { display: none !important; }
+            .nav-item.active::before { content: ''; position: absolute; bottom: 0; left: 10px; right: 10px; height: 4px; background-color: var(--nav-icon-active-color); border-radius: 4px 4px 0 0; }
+            h1 { font-size: 2em; }
+            #main-content { padding: 15px; }
         }
-         .zoom-controls span label, .zoom-controls span span {
-             color: var(--secondary-text-color);
-             transition: color 0.3s ease;
-             vertical-align: middle;
-             margin-left: 5px;
-         }
+
+        h1 { text-align: center; font-size: 2.5em; font-weight: 700; margin: 0 0 25px 0; }
+        .button-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        button { font-family: 'Roboto', sans-serif; font-size: 1em; font-weight: 500; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; background-color: var(--primary-color); color: white; }
+        button:hover:not(:disabled) { background-color: var(--primary-hover); }
+        button:disabled { background-color: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; }
+        button.danger { background-color: var(--danger-color); }
+        button.danger:hover:not(:disabled) { background-color: var(--danger-hover); }
+        button.warning { background-color: var(--warning-color); }
+        button.warning:hover:not(:disabled) { background-color: var(--warning-hover); }
+
+        .mode-card-option { padding: 20px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; }
+        .mode-card-option:hover { border-color: var(--primary-color); background-color: color-mix(in srgb, var(--card-bg) 95%, var(--primary-color)); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        #round-info { font-size: 1em; color: var(--secondary-text); font-weight: 500; }
+        
+        #scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center; gap: 15px; margin: 20px 0; }
+        .score-display { display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 8px; font-weight: 500; }
+        .score-display .score-label { font-size: 0.9em; font-weight: 400; color: var(--secondary-text); }
+        .score-display.leading { box-shadow: 0 0 15px var(--win-glow); }
+        .score-display span { font-size: 1.5em; font-weight: 700; display: block; }
+        #draw-score-display { font-size: 0.9em; opacity: 0.7; }
+        
+        #game-display { display: flex; justify-content: space-around; align-items: center; margin: 25px 0; }
+        .player-area, .ai-area { text-align: center; width: 100px; }
+        .hand-display { font-size: 3em; min-width: 80px; min-height: 80px; line-height: 80px; display: flex; justify-content: center; align-items: center; }
+        .hand-display svg { width: 1em; height: 1em; fill: var(--text-color); }
+        .hand-display.pop-in { animation: popIn 0.4s ease-out forwards; }
+        #result-display { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; font-size: 1.3em; font-weight: 700; }
+        .result-win { background-color: var(--win-glow); color: #27ae60; }
+        .result-lose { background-color: var(--lose-glow); color: var(--danger-color); }
+        .result-draw { background-color: var(--draw-glow); color: var(--secondary-text); }
+
+        #turn-indicator { min-height: 1.2em; margin-bottom: 15px; font-weight: 500; color: var(--secondary-text); }
+        .controls-group { margin-top: 20px; }
+        
+        /* ▼▼▼ 変更点1: グラフコンテナのCSSを調整しました ▼▼▼ */
+        .chart-container {
+            width: 100%;
+            /* JavaScript側で高さを指定するため、ここでのheight/min-height指定は不要です。 */
+            /* これにより、各グラフのサイズが柔軟に設定できます。 */
+        }
+        
+        #hands-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center; }
+        
+        #notification-area { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; border-radius: 8px; background-color: color-mix(in srgb, var(--card-bg) 95%, black); color: var(--text-color); box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #notification-area.show { opacity: 1; pointer-events: auto; }
+
+        @media (max-width: 767px) {
+            #scoreboard { grid-template-columns: 1fr; gap: 5px; }
+            .hand-display { font-size: 3em; }
+            .player-area, .ai-area { width: 100px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>じゃんけんAI</h1>
+    <div class="app-container">
+        <nav id="main-nav">
+            <a class="nav-item active" data-tab="setup">
+                <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5M12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5M1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8m9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5m1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/></svg></span>
+                <span class="nav-item-label">対戦設定</span>
+            </a>
+            <a class="nav-item" data-tab="game">
+                <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg></span>
+                <span class="nav-item-label">対戦</span>
+            </a>
+            <a class="nav-item" data-tab="settings">
+                <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+<path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+</svg></span>
+                <span class="nav-item-label">設定</span>
+            </a>
+        </nav>
+        <main id="main-content">
+            <header>
+                <h1>じゃんけんAI</h1>
+            </header>
 
-        <div id="mode-selection">
-            <h2>モード選択</h2>
-            <div class="mode-buttons">
-                <button onclick="selectMode('player-vs-ai')">あなた VS AI</button>
-                <button onclick="selectMode('ai-vs-ai')">AI VS AI</button>
-                <button onclick="selectMode('player-vs-player')">あなた VS ユーザー2</button>
-            </div>
-        </div>
-
-        <div id="game-length-selection" class="initially-hidden">
-            <h2>勝負回数選択</h2>
-            <div id="game-length-buttons">
-                <button onclick="setGameLength(1)">1回勝負</button>
-                <button onclick="setGameLength(5)">5回勝負</button>
-                <button onclick="setGameLength(10)">10回勝負</button>
-                <button onclick="setGameLength(25)">25回勝負</button>
-                <button onclick="setGameLength(50)">50回勝負</button>
-                <button onclick="setGameLength(100)">100回勝負</button>
-                <button onclick="setGameLength(250)">250回勝負</button>
-                <button onclick="setGameLength(500)">500回勝負</button>
-                <button onclick="setGameLength(1000)">1,000回勝負</button>
-                <button onclick="setGameLength(Infinity)">∞</button>
-            </div>
-        </div>
-
-        <div id="game-area" class="initially-hidden">
-            <div id="scoreboard">
-                 <div id="player-score-display">あなた: 0</div>
-                 <div id="draw-score-display">あいこ: 0</div>
-                 <div id="ai-score-display">AI: 0</div>
-                 <div id="score-difference-display">同点</div>
-            </div>
-             <div id="round-info" style="text-align: center; margin-bottom: 15px; font-size: 0.9em;">ラウンド: 0 / 0</div>
-
-            <div id="game-display">
-                <div class="player-area">
-                    <div id="player-name">あなた</div>
-                    <div id="player-hand" class="hand-display">?</div>
+            <section id="setup-section" class="tab-content active">
+                <div id="setup-card" class="card">
+                    <div id="mode-selection-container">
+                        <h2>1. モード選択</h2>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="mode-card-option" data-mode="player-vs-ai"><h3>あなた VS AI</h3><p>AIの次の手を予測して勝利を目指せ！</p></div>
+                            <div class="mode-card-option" data-mode="ai-vs-ai"><h3>AI VS AI</h3><p>AI同士の高速対戦を観戦しよう。</p></div>
+                            <div class="mode-card-option" data-mode="player-vs-player"><h3>あなた VS ユーザー2</h3><p>友達や家族と対戦しよう。</p></div>
+                        </div>
+                    </div>
+                    <div id="game-length-container" style="display: none;">
+                        <h2>2. 勝負回数選択</h2>
+                        <p class="card-description">何回勝負で決着をつけますか？回数が多いほど戦略が重要になります。</p>
+                        <div class="button-group" id="game-length-buttons">
+                            <button data-length="1">一発勝負</button> <button data-length="3">3回</button> <button data-length="5">5回</button>
+                            <button data-length="10">10回</button> <button data-length="25">25回</button> <button data-length="50">50回</button>
+                            <button data-length="100">100回</button> <button data-length="250">250回</button> <button data-length="500">500回</button>
+                            <button data-length="1000">1000回</button> <button data-length="Infinity">無制限</button>
+                        </div>
+                    </div>
                 </div>
-                <div style="font-size: 1.5em; font-weight: bold;">VS</div>
-                <div class="ai-area">
-                     <div id="ai-name">AI</div>
-                    <div id="ai-hand" class="hand-display">?</div>
+            </section>
+
+            <section id="game-section" class="tab-content">
+                <div id="game-content-grid" class="content-grid">
+                    <div class="control-panel">
+                        <div id="game-play-card" class="card">
+                            <div id="game-blocker"><div><p>最初に対戦設定をしてください。</p><button id="go-to-setup-btn">設定に移動</button></div></div>
+                            <div class="card-header">
+                                <h2 id="game-play-title">対戦</h2>
+                                <div id="round-info">Round: 0 / 0</div>
+                            </div>
+                            <div id="scoreboard">
+                                 <div class="score-display"> <div class="score-label">あなた</div> <span id="player-score-span">0</span> </div>
+                                 <div id="draw-score-display" class="score-display"> <div class="score-label">あいこ</div> <span id="draw-score-span">0</span> </div>
+                                 <div class="score-display"> <div class="score-label">AI</div> <span id="ai-score-span">0</span> </div>
+                            </div>
+                            <div id="game-display">
+                                <div class="player-area"> <div id="player-name" class="name">あなた</div> <div id="player-hand" class="hand-display">?</div> </div>
+                                <div style="font-size: 1.8em; font-weight: bold; color: var(--secondary-text);">VS</div>
+                                <div class="ai-area"> <div id="ai-name" class="name">AI</div> <div id="ai-hand" class="hand-display">?</div> </div>
+                            </div>
+                            <div id="result-display">結果を待っています...</div>
+                            <div id="player-controls">
+                                <div id="turn-indicator"></div>
+                                <div class="button-group"> <button data-hand="rock">✊ グー</button> <button data-hand="paper">✋ パー</button> <button data-hand="scissors">✌️ チョキ</button> </div>
+                                <div class="controls-group button-group">
+                                    <button id="start-pause-button">スタート</button>
+                                    <button id="quit-button" class="danger" style="display: none;">やめる</button>
+                                    <button id="new-game-button" class="warning" style="display: none;">別のゲームを始める</button>
+                                </div>
+                            </div>
+                            <div id="ai-vs-ai-controls">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                                   <label for="ai-speed-slider">対戦速度:</label>
+                                   <input type="range" id="ai-speed-slider" min="1" max="200" value="10" style="flex-grow: 1; max-width: 200px;">
+                                   <span id="ai-speed-display" style="font-weight: 700; min-width: 30px;">10</span>回/秒
+                                </div>
+                                <div class="controls-group button-group">
+                                    <button id="ai-vs-ai-start-stop">スタート</button>
+                                    <button id="ai-quit-button" class="danger" style="display: none;">やめる</button>
+                                    <button id="ai-new-game-button" class="warning" style="display: none;">別のゲームを始める</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="stats-card" class="card">
+                            <h2>手の内訳</h2>
+                            <div id="hands-stats">
+                                <div> <h4 id="player1-hands-title">あなた</h4> <p>✊ グー: <span id="p1-rock-count">0</span></p> <p>✋ パー: <span id="p1-paper-count">0</span></p> <p>✌️ チョキ: <span id="p1-scissors-count">0</span></p> </div>
+                                <div> <h4 id="player2-hands-title">AI</h4> <p>✊ グー: <span id="p2-rock-count">0</span></p> <p>✋ パー: <span id="p2-paper-count">0</span></p> <p>✌️ チョキ: <span id="p2-scissors-count">0</span></p> </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-panel">
+                         <div id="charts-card" class="card">
+                            <h2>データ分析グラフ</h2>
+                            <div id="resultsChart" class="chart-container"></div>
+                            <div id="handsChart" class="chart-container" style="margin-top: 25px;"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-             <div id="result-text" class="result-text" style="text-align: center;">結果を待っています...</div>
-             <div id="turn-indicator" style="text-align: center;" class="initially-hidden"></div>
-
-
-            <div id="player-controls" class="initially-hidden">
-                 <div>
-                    <h3 id="player-controls-title" style="margin: 0 10px 0 0; animation: none; opacity: 1;">あなたの手を選択してください:</h3>
-                    <button onclick="playerChoose('rock')">✊ グー</button>
-                    <button onclick="playerChoose('paper')">✋ パー</button>
-                    <button onclick="playerChoose('scissors')">✌️ チョキ</button>
+            </section>
+            
+            <section id="settings-section" class="tab-content">
+                 <div id="settings-card" class="card">
+                    <h2>設定</h2>
+                    <div class="settings-item">
+                        <label for="popups-enabled-switch">手のポップアップアニメーション</label>
+                        <label class="switch"><input type="checkbox" id="popups-enabled-switch" checked><span class="slider"></span></label>
+                    </div>
+                     <div class="settings-item">
+                        <label for="data-analysis-enabled-switch">データ分析パネルの表示</label>
+                        <label class="switch"><input type="checkbox" id="data-analysis-enabled-switch" checked><span class="slider"></span></label>
+                    </div>
                  </div>
-                 <div>
-                    <button id="start-pause-button" onclick="toggleStartPause()">スタート</button>
-                    <button id="quit-button" onclick="quitGame()">辞める</button>
-                 </div>
-            </div>
-
-            <div id="ai-vs-ai-controls" class="initially-hidden">
-                <div>
-                    <label for="ai-speed-slider" style="animation: none; opacity: 1;">対戦速度 (回/秒):</label>
-                    <input type="range" id="ai-speed-slider" min="1" max="200" value="10" oninput="updateSpeedDisplay(this.value)" style="animation: none; opacity: 1;">
-                    <span id="ai-speed-display" style="animation: none; opacity: 1;">10</span> <span style="animation: none; opacity: 1;">回/秒</span>
-                </div>
-                <div>
-                    <button id="ai-vs-ai-start-stop" onclick="toggleStartPause()">スタート</button>
-                    <button id="ai-quit-button" onclick="quitGame()">辞める</button>
-                </div>
-            </div>
-
-            <div id="hands-stats" class="initially-hidden">
-                <div id="player1-hands-stats">
-                    <h4 id="player1-hands-title">あなたの手の内訳</h4>
-                    <p><label>✊ グー:</label> <span id="p1-rock-count" class="hand-rock">0</span></p>
-                    <p><label>✋ パー:</label> <span id="p1-paper-count" class="hand-paper">0</span></p>
-                    <p><label>✌️ チョキ:</label> <span id="p1-scissors-count" class="hand-scissors">0</span></p>
-                </div>
-                <div id="player2-hands-stats">
-                    <h4 id="player2-hands-title">AIの手の内訳</h4>
-                    <p><label>✊ グー:</label> <span id="p2-rock-count" class="hand-rock">0</span></p>
-                    <p><label>✋ パー:</label> <span id="p2-paper-count" class="hand-paper">0</span></p>
-                    <p><label>✌️ チョキ:</label> <span id="p2-scissors-count" class="hand-scissors">0</span></p>
-                </div>
-            </div>
-        </div>
-
-
-        <div id="chart-container" class="initially-hidden">
-            <canvas id="resultsChart"></canvas>
-            <div class="zoom-controls initially-hidden">
-                <button onclick="resetZoom('resultsChart')" id="reset-zoom-button">ズームリセット (勝敗)</button>
-                <span>
-                    <label class="switch" style="animation: none; opacity: 1;">
-                        <input type="checkbox" id="zoom-toggle-switch" onchange="toggleZoomSwitch(this.checked, 'resultsChart')" checked>
-                        <span class="slider round"></span>
-                    </label>
-                    <span style="animation: none; opacity: 1;">ズーム有効</span>
-                </span>
-            </div>
-        </div>
-
-        <div id="hands-chart-container" class="initially-hidden">
-            <canvas id="handsChart"></canvas>
-             <div class="zoom-controls initially-hidden">
-                <button onclick="resetZoom('handsChart')" id="reset-hands-zoom-button">ズームリセット (手の内訳)</button>
-                 <span>
-                    <label class="switch" style="animation: none; opacity: 1;">
-                        <input type="checkbox" id="hands-zoom-toggle-switch" onchange="toggleZoomSwitch(this.checked, 'handsChart')" checked>
-                        <span class="slider round"></span>
-                    </label>
-                    <span style="animation: none; opacity: 1;">ズーム有効</span>
-                </span>
-            </div>
-        </div>
-
+            </section>
+        </main>
     </div>
-
-    <div id="notification-area" onclick="hideNotification()">
-        <p id="notification-message">メッセージ</p>
-    </div>
+    
+    <div id="notification-area"><p id="notification-message">メッセージ</p></div>
 
     <script>
-        Chart.defaults.font.family = "'Roboto', sans-serif";
-
         const HANDS = ['rock', 'paper', 'scissors'];
-        const HAND_EMOJIS_ARRAY = ['✊', '✋', '✌️']; // For bar chart labels
         const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
         const WIN_CONDITIONS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
-        const UNITS = {
-             3: 'K',  6: 'M',  9: 'B', 12: 'T', 15: 'Q', 18: 'Qu', 21: 'Sx', 24: 'Sp',
-            27: 'O', 30: 'N', 33: 'D', 36: 'Ud', 39: 'Duo', 42: 'Tre', 45: 'Qua',
-            48: 'Qd', 51: 'Sd', 54: 'Sepd', 57: 'Oct', 60: 'NV', 63: 'V', 66: 'UNV',
-            69: 'A', 72: 'C', 75: 'E', 78: 'F', 81: 'G', 84: 'H', 87: 'I', 90: 'J',
-            93: 'L', 96: 'P'
+        const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
+        
+        let gameState = {};
+        let resultsChart = null, handsChart = null;
+        let aiVsAiIntervalId = null, roundResetTimeoutId = null, notificationTimeoutId = null;
+        
+        const DOMElements = {
+            navItems: document.querySelectorAll('.nav-item'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            gameContentGrid: document.getElementById('game-content-grid'),
+            modeSelectionContainer: document.getElementById('mode-selection-container'),
+            gameLengthContainer: document.getElementById('game-length-container'),
+            modeCards: document.querySelectorAll('.mode-card-option'),
+            gameLengthButtons: document.getElementById('game-length-buttons'),
+            dataPanel: document.querySelector('.data-panel'),
+            chartsCard: document.getElementById('charts-card'),
+            gameBlocker: document.getElementById('game-blocker'),
+            goToSetupBtn: document.getElementById('go-to-setup-btn'),
+            roundInfo: document.getElementById('round-info'),
+            playerScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(1) .score-label'),
+            aiScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(3) .score-label'),
+            playerScoreSpan: document.getElementById('player-score-span'),
+            aiScoreSpan: document.getElementById('ai-score-span'),
+            drawScoreSpan: document.getElementById('draw-score-span'),
+            playerName: document.getElementById('player-name'), aiName: document.getElementById('ai-name'),
+            playerHand: document.getElementById('player-hand'), aiHand: document.getElementById('ai-hand'),
+            resultDisplay: document.getElementById('result-display'),
+            turnIndicator: document.getElementById('turn-indicator'),
+            playerControls: document.getElementById('player-controls'),
+            playerChoiceButtons: document.querySelectorAll('#player-controls button[data-hand]'),
+            startPauseButton: document.getElementById('start-pause-button'),
+            quitButton: document.getElementById('quit-button'),
+            newGameButton: document.getElementById('new-game-button'),
+            aiVsAiControls: document.getElementById('ai-vs-ai-controls'),
+            aiSpeedSlider: document.getElementById('ai-speed-slider'),
+            aiSpeedDisplay: document.getElementById('ai-speed-display'),
+            aiStartStopButton: document.getElementById('ai-vs-ai-start-stop'),
+            aiQuitButton: document.getElementById('ai-quit-button'),
+            aiNewGameButton: document.getElementById('ai-new-game-button'),
+            p1HandsTitle: document.getElementById('player1-hands-title'), p2HandsTitle: document.getElementById('player2-hands-title'),
+            p1Rock: document.getElementById('p1-rock-count'), p1Paper: document.getElementById('p1-paper-count'), p1Scissors: document.getElementById('p1-scissors-count'),
+            p2Rock: document.getElementById('p2-rock-count'), p2Paper: document.getElementById('p2-paper-count'), p2Scissors: document.getElementById('p2-scissors-count'),
+            popupsEnabledSwitch: document.getElementById('popups-enabled-switch'),
+            dataAnalysisEnabledSwitch: document.getElementById('data-analysis-enabled-switch'),
+            notificationArea: document.getElementById('notification-area'),
+            notificationMessage: document.getElementById('notification-message'),
         };
-        const UNIT_KEYS = Object.keys(UNITS).map(Number).sort((a, b) => b - a);
 
-        let gameMode = '';
-        let currentGameLength = 0;
-        let currentRound = 0;
-        let scores = {
-            player1: 0, player2: 0, draw: 0,
-            player1Hands: { rock: 0, paper: 0, scissors: 0 },
-            player2Hands: { rock: 0, paper: 0, scissors: 0 }
-        };
-        let playerHistory = [];
-        let ai1History = [];
-        let ai2History = [];
-
-        let resultsChartInstance = null;
-        let handsChartInstance = null; // Now for Bar Chart
-        let resultsChartData = { labels: [], datasets: [] };
-        // handsChartData is not used in the same way for bar chart, data is set directly in instance
-
-        let aiVsAiIntervalId = null;
-        let aiVsAiSpeed = 10;
-        let isAiVsAiRunning = false;
-        let isGameOver = false;
-        let isGamePaused = true;
-        let colorSchemeMatcher = window.matchMedia('(prefers-color-scheme: dark)');
-        let notificationTimeoutId = null;
-        let isNotificationVisible = false;
-        let currentPlayerTurn = 'player1';
-        let player1HandChoice = null;
-        let roundResetTimeoutId = null;
-
-        let isResultsZoomEnabled = true;
-        let isHandsZoomEnabled = true; // Will be less useful for bar chart
-
-
-        const modeSelectionDiv = document.getElementById('mode-selection');
-        const gameLengthSelectionDiv = document.getElementById('game-length-selection');
-        const gameAreaDiv = document.getElementById('game-area');
-        const scoreboardPlayerDisplay = document.getElementById('player-score-display');
-        const scoreboardDrawDisplay = document.getElementById('draw-score-display');
-        const scoreboardAiDisplay = document.getElementById('ai-score-display');
-        const scoreDifferenceDisplay = document.getElementById('score-difference-display');
-        const roundInfoDisplay = document.getElementById('round-info');
-        const playerNameDisplay = document.getElementById('player-name');
-        const aiNameDisplay = document.getElementById('ai-name');
-        const playerHandDisplay = document.getElementById('player-hand');
-        const aiHandDisplay = document.getElementById('ai-hand');
-        const resultTextDisplay = document.getElementById('result-text');
-        const turnIndicator = document.getElementById('turn-indicator');
-        const playerControlsDiv = document.getElementById('player-controls');
-        const playerControlsTitle = document.getElementById('player-controls-title');
-        const aiVsAiControlsDiv = document.getElementById('ai-vs-ai-controls');
-        const aiSpeedSlider = document.getElementById('ai-speed-slider');
-        const aiSpeedDisplay = document.getElementById('ai-speed-display');
-        const startPauseButton = document.getElementById('start-pause-button');
-        const aiVsAiStartStopButton = document.getElementById('ai-vs-ai-start-stop');
-        const chartContainerDiv = document.getElementById('chart-container');
-        const handsChartContainerDiv = document.getElementById('hands-chart-container');
-        const notificationArea = document.getElementById('notification-area');
-        const notificationMessage = document.getElementById('notification-message');
-        const quitButton = document.getElementById('quit-button');
-        const aiQuitButton = document.getElementById('ai-quit-button');
-        const playerChoiceButtons = playerControlsDiv.querySelectorAll('button:not(#start-pause-button):not(#quit-button)');
-
-        const handsStatsDiv = document.getElementById('hands-stats');
-        const p1HandsTitle = document.getElementById('player1-hands-title');
-        const p2HandsTitle = document.getElementById('player2-hands-title');
-        const p1RockCount = document.getElementById('p1-rock-count');
-        const p1PaperCount = document.getElementById('p1-paper-count');
-        const p1ScissorsCount = document.getElementById('p1-scissors-count');
-        const p2RockCount = document.getElementById('p2-rock-count');
-        const p2PaperCount = document.getElementById('p2-paper-count');
-        const p2ScissorsCount = document.getElementById('p2-scissors-count');
-
-        const resultsZoomToggleSwitch = document.getElementById('zoom-toggle-switch');
-        const handsZoomToggleSwitch = document.getElementById('hands-zoom-toggle-switch');
-        const resultsZoomControlsDiv = chartContainerDiv.querySelector('.zoom-controls');
-        const handsZoomControlsDiv = handsChartContainerDiv.querySelector('.zoom-controls');
-
-
-        window.onload = () => {
-            loadGameData();
-            colorSchemeMatcher.addEventListener('change', handleColorSchemeChange);
-            updateScoreboard();
-            updateHandsStatsUI();
-            resetHandDisplays();
-            isGamePaused = true;
-            hideElement(playerControlsDiv);
-            hideElement(aiVsAiControlsDiv);
-            const noJsInitialFade = [
-                playerControlsTitle, aiSpeedSlider, aiSpeedDisplay,
-                document.querySelector('#ai-vs-ai-controls label[for="ai-speed-slider"]'),
-                document.querySelector('#ai-vs-ai-controls span:last-of-type'),
-                resultsZoomControlsDiv.querySelector('.switch'),
-                resultsZoomControlsDiv.querySelector('span span'),
-                handsZoomControlsDiv.querySelector('.switch'),
-                handsZoomControlsDiv.querySelector('span span'),
-            ];
-            noJsInitialFade.forEach(el => {
-                if (el) {
-                    el.style.animation = 'none';
-                    el.style.opacity = '1';
-                }
+        function initializeEventListeners() {
+            DOMElements.navItems.forEach(item => item.addEventListener('click', () => showTab(item.dataset.tab)));
+            DOMElements.modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
+            DOMElements.gameLengthButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') setGameLength(e.target.dataset.length === 'Infinity' ? Infinity : parseInt(e.target.dataset.length));
             });
-        };
-
-        function handleColorSchemeChange(e) {
-            if (resultsChartInstance) {
-                updateChartColors(resultsChartInstance);
-                resultsChartInstance.update();
-            }
-            if (handsChartInstance) { // For Bar chart
-                updateChartColors(handsChartInstance, true); // Pass isBarChart = true
-                handsChartInstance.update();
-            }
-            updateStartPauseButtonState();
+            DOMElements.goToSetupBtn.addEventListener('click', () => showTab('setup'));
+            DOMElements.playerChoiceButtons.forEach(button => button.addEventListener('click', () => playerChoose(button.dataset.hand)));
+            [DOMElements.startPauseButton, DOMElements.aiStartStopButton].forEach(btn => btn.addEventListener('click', togglePause));
+            [DOMElements.quitButton, DOMElements.aiQuitButton].forEach(btn => btn.addEventListener('click', quitGame));
+            [DOMElements.newGameButton, DOMElements.aiNewGameButton].forEach(btn => btn.addEventListener('click', () => { resetGame(); showTab('setup'); }));
+            DOMElements.aiSpeedSlider.addEventListener('input', (e) => updateSpeedDisplay(e.target.value));
+            DOMElements.popupsEnabledSwitch.addEventListener('change', (e) => gameState.settings.popupsEnabled = e.target.checked);
+            DOMElements.dataAnalysisEnabledSwitch.addEventListener('change', (e) => {
+                gameState.settings.dataAnalysisEnabled = e.target.checked;
+                DOMElements.dataPanel.style.display = e.target.checked ? 'flex' : 'none';
+                DOMElements.gameContentGrid.classList.toggle('show-data-panel', e.target.checked);
+                if(e.target.checked && (!resultsChart || !handsChart)) initializeCharts();
+            });
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateAllChartsTheme);
         }
 
-        function getChartColors() {
-            const style = getComputedStyle(document.documentElement);
-            return {
-                gridColor: style.getPropertyValue('--chart-grid-color').trim(),
-                labelColor: style.getPropertyValue('--chart-label-color').trim(),
-                titleColor: style.getPropertyValue('--chart-title-color').trim(),
-                accent1: style.getPropertyValue('--accent1-color').trim(),
-                accent2: style.getPropertyValue('--accent2-color').trim(),
-                accent3: style.getPropertyValue('--accent3-color').trim(),
-                accent4: style.getPropertyValue('--accent4-color').trim(),
-                handRock: style.getPropertyValue('--hand-rock-color').trim(),
-                handPaper: style.getPropertyValue('--hand-paper-color').trim(),
-                handScissors: style.getPropertyValue('--hand-scissors-color').trim(),
-            };
+        function showTab(tabId) {
+            if (tabId === 'game' && !gameState.setupComplete) DOMElements.gameBlocker.classList.add('active');
+            else DOMElements.gameBlocker.classList.remove('active');
+            DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
+            DOMElements.tabContents.forEach(content => content.classList.toggle('active', content.id === `${tabId}-section`));
         }
-
-        // Modified to handle bar chart dataset colors
-         function updateChartColors(chart, isBarChart = false) {
-             if (!chart) return;
-             const colors = getChartColors();
-
-            if (isBarChart) {
-                chart.data.datasets.forEach((dataset, index) => {
-                    // For bar chart, P1 and P2 datasets will have specific colors
-                    if (dataset.label.includes('あなた') || dataset.label.includes('AI 1') || dataset.label.includes('P1')) {
-                        dataset.backgroundColor = colors.accent1; // Or more specific if needed
-                        dataset.borderColor = colors.accent1;
-                    } else if (dataset.label.includes('AI') || dataset.label.includes('ユーザー2') || dataset.label.includes('P2')) {
-                        dataset.backgroundColor = colors.accent2;
-                        dataset.borderColor = colors.accent2;
-                    }
-                });
-            } else { // Line chart (results chart)
-                 chart.data.datasets.forEach(dataset => {
-                     if (dataset.label.includes('あなた') || dataset.label.includes('AI 1')) { dataset.borderColor = colors.accent1; }
-                     else if (dataset.label.includes('AI') || dataset.label.includes('ユーザー2')) { dataset.borderColor = colors.accent2; }
-                     else if (dataset.label.includes('あいこ')) { dataset.borderColor = colors.accent3; }
-                     else if (dataset.label.includes('スコア差')) { dataset.borderColor = colors.accent4; }
-                 });
-            }
-
-
-             if (chart.options.scales.x) {
-                chart.options.scales.x.grid.color = colors.gridColor;
-                chart.options.scales.x.ticks.color = colors.labelColor;
-                chart.options.scales.x.title.color = colors.titleColor;
-             }
-             if (chart.options.scales.y) {
-                chart.options.scales.y.grid.color = colors.gridColor;
-                chart.options.scales.y.ticks.color = colors.labelColor;
-                chart.options.scales.y.title.color = colors.titleColor;
-             }
-              if (chart.options.scales.y1 && !isBarChart) { // y1 only for results line chart
-                 chart.options.scales.y1.grid.color = colors.gridColor;
-                 chart.options.scales.y1.ticks.color = colors.labelColor;
-                 chart.options.scales.y1.title.color = colors.titleColor;
-             }
-             if (chart.options.plugins.legend) chart.options.plugins.legend.labels.color = colors.labelColor;
-             if (chart.options.plugins.title) chart.options.plugins.title.color = colors.titleColor;
-         }
 
         function selectMode(mode) {
-            if (isNotificationVisible) hideNotification(true);
-            gameMode = mode;
-            hideElement(modeSelectionDiv);
-            fadeInElement(gameLengthSelectionDiv);
-
+            gameState.mode = mode;
             let p1Name = 'あなた', p2Name = 'AI';
-            let p1HandsLabel = 'あなたの手の内訳', p2HandsLabel = 'AIの手の内訳';
-            if (mode === 'ai-vs-ai') {
-                p1Name = 'AI 1'; p2Name = 'AI 2';
-                p1HandsLabel = 'AI 1の手の内訳'; p2HandsLabel = 'AI 2の手の内訳';
-            } else if (mode === 'player-vs-player') {
-                p1Name = 'あなた'; p2Name = 'ユーザー2';
-                p1HandsLabel = 'あなたの手の内訳'; p2HandsLabel = 'ユーザー2の手の内訳';
-            }
-            fadeInElementText(playerNameDisplay, p1Name);
-            fadeInElementText(aiNameDisplay, p2Name);
-            fadeInElementText(p1HandsTitle, p1HandsLabel);
-            fadeInElementText(p2HandsTitle, p2HandsLabel);
-
-            resetGameFullState();
-            fadeInElementText(resultTextDisplay, '勝負回数を選択してください...');
-            hideElement(resultsZoomControlsDiv);
-            hideElement(handsZoomControlsDiv);
-            hideElement(handsStatsDiv);
+            if (mode === 'ai-vs-ai') { p1Name = 'AI 1'; p2Name = 'AI 2'; }
+            else if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
+            [DOMElements.playerName, DOMElements.p1HandsTitle, DOMElements.playerScoreLabel].forEach(el => el.textContent = p1Name);
+            [DOMElements.aiName, DOMElements.p2HandsTitle, DOMElements.aiScoreLabel].forEach(el => el.textContent = p2Name);
+            DOMElements.modeSelectionContainer.style.display = 'none';
+            DOMElements.gameLengthContainer.style.display = 'block';
+            DOMElements.gameLengthContainer.style.animation = 'fadeIn 0.6s';
         }
 
         function setGameLength(length) {
-            if (isNotificationVisible) hideNotification(true);
-            currentGameLength = length;
-            resetGameFullState();
-            updateScoreboard();
-            updateRoundInfo();
-            updateHandsStatsUI();
-            resetHandDisplays();
-
-            hideElement(gameLengthSelectionDiv);
-            fadeInElement(gameAreaDiv);
-            fadeInElement(handsStatsDiv);
-            fadeInElement(chartContainerDiv);
-            fadeInElement(handsChartContainerDiv);
-
-
-            isResultsZoomEnabled = true;
-            isHandsZoomEnabled = true; // Keep for consistency, though less useful for bar
-            initializeResultsChart();
-            initializeHandsBarChart(); // Changed to bar chart init
-            fadeInElement(resultsZoomControlsDiv);
-            fadeInElement(handsZoomControlsDiv);
-            resultsZoomToggleSwitch.checked = isResultsZoomEnabled;
-            handsZoomToggleSwitch.checked = isHandsZoomEnabled;
-
-
-            hideElement(playerControlsDiv);
-            hideElement(aiVsAiControlsDiv);
-            hideElement(turnIndicator);
-            isGamePaused = true;
-
-            if (gameMode === 'player-vs-ai' || gameMode === 'player-vs-player') {
-                fadeInElement(playerControlsDiv);
-                enablePlayerChoices(false);
-                fadeInElement(startPauseButton);
-                fadeInElement(quitButton);
-                if (gameMode === 'player-vs-player') {
-                    fadeInElement(turnIndicator);
-                }
-            } else if (gameMode === 'ai-vs-ai') {
-                fadeInElement(aiVsAiControlsDiv);
-                aiSpeedSlider.disabled = false;
-                fadeInElement(aiVsAiStartStopButton);
-                fadeInElement(aiQuitButton);
-            }
-            updateStartPauseButtonState();
-            fadeInElementText(resultTextDisplay, '「スタート」を押してゲームを開始してください。');
-        }
-
-
-        function toggleStartPause() {
-            if (isGameOver) return;
-            isGamePaused = !isGamePaused;
-            clearTimeout(roundResetTimeoutId);
-            if (gameMode === 'ai-vs-ai') {
-                if (!isGamePaused) { startAiVsAi(); }
-                else { stopAiVsAi(); }
+            resetGame(length);
+            gameState.setupComplete = true;
+            if (gameState.mode === 'player-vs-ai' || gameState.mode === 'player-vs-player') {
+                DOMElements.playerControls.style.display = 'block';
+                DOMElements.aiVsAiControls.style.display = 'none';
             } else {
-                if (!isGamePaused) {
-                    enablePlayerChoices(true);
-                    updateTurnIndicator();
-                    fadeInElementText(resultTextDisplay, getWaitingMessage());
-                } else {
-                    enablePlayerChoices(false);
-                    fadeInElementText(resultTextDisplay, '一時停止中... 「スタート」で再開します。');
-                }
+                DOMElements.playerControls.style.display = 'none';
+                DOMElements.aiVsAiControls.style.display = 'block';
             }
-            updateStartPauseButtonState();
-        }
-
-        function updateStartPauseButtonState() {
-            let button = (gameMode === 'ai-vs-ai') ? aiVsAiStartStopButton : startPauseButton;
-            if (isGameOver) {
-                button.textContent = '終了'; button.disabled = true; button.classList.remove('paused');
-            } else if (isGamePaused) {
-                button.textContent = 'スタート'; button.disabled = false; button.classList.remove('paused');
-            } else {
-                button.textContent = '一時停止'; button.disabled = false; button.classList.add('paused');
-            }
+            if (gameState.settings.dataAnalysisEnabled) initializeCharts();
+            updateUI();
+            showTab('game');
         }
 
         function quitGame() {
-            if (isGameOver) return;
-            isGameOver = true; isGamePaused = true;
-            clearTimeout(roundResetTimeoutId); clearTimeout(notificationTimeoutId);
-            if (gameMode === 'ai-vs-ai') {
-                if (isAiVsAiRunning) stopAiVsAi();
-                aiSpeedSlider.disabled = true; aiVsAiStartStopButton.disabled = true; hideElement(aiQuitButton);
-            } else {
-                enablePlayerChoices(false); startPauseButton.disabled = true; hideElement(quitButton); hideElement(turnIndicator);
-            }
-            let finalMessage = `勝負終了！ (${formatNumber(scores.player1)} 対 ${formatNumber(scores.player2)}`;
-            if (scores.draw > 0) finalMessage += ` あいこ ${formatNumber(scores.draw)}回`;
-            finalMessage += `) `;
-            let p1FinalName = playerNameDisplay.textContent.split(':')[0].trim();
-            let p2FinalName = aiNameDisplay.textContent.split(':')[0].trim();
-            if (scores.player1 > scores.player2) finalMessage += `${p1FinalName}の勝ちです！`;
-            else if (scores.player2 > scores.player1) finalMessage += `${p2FinalName}の勝ちです！`;
-            else finalMessage += "引き分けです！";
-            fadeInElementText(resultTextDisplay, finalMessage);
-            showNotification(finalMessage, false, true, 4000);
-            setTimeout(resetForNewGameSelection, 4500);
+            gameState.isOver = true;
+            gameState.isPaused = true;
+            if (gameState.mode === 'ai-vs-ai') stopAiVsAi();
+            updateUI();
         }
 
-        function playerChoose(chosenHand) {
-            if (isGamePaused || isGameOver) return;
+        function togglePause() {
+            if (gameState.isOver) return;
+            gameState.isPaused = !gameState.isPaused;
             clearTimeout(roundResetTimeoutId);
-
-            if (gameMode === 'player-vs-ai') {
-                enablePlayerChoices(false);
-                const aiHand = getAiHand(playerHistory);
-                playerHistory.push(chosenHand);
-                if (playerHistory.length > 500) playerHistory.shift();
-                playRound(chosenHand, aiHand);
-            } else if (gameMode === 'player-vs-player') {
-                handlePlayerVsPlayerChoice(chosenHand);
-            }
+            if (gameState.mode === 'ai-vs-ai') gameState.isPaused ? stopAiVsAi() : startAiVsAi();
+            else setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
+            updateUI();
         }
 
-
-        function handlePlayerVsPlayerChoice(hand) {
-            if (isGamePaused || isGameOver) return;
-
-            if (currentPlayerTurn === 'player1') {
-                player1HandChoice = hand;
-                currentPlayerTurn = 'player2';
-                playerHandDisplay.textContent = '❔';
-                aiHandDisplay.textContent = '?';
-                updateTurnIndicator();
-                enablePlayerChoices(true);
-                fadeInElementText(resultTextDisplay, getWaitingMessage());
-            } else {
-                const player2HandChoice = hand;
-                if (!player1HandChoice) {
-                    console.error("Player 1 hand not chosen in P vs P mode.");
-                    return;
+        function playerChoose(hand) {
+            if (gameState.isPaused || gameState.isOver) return;
+            clearTimeout(roundResetTimeoutId);
+            if (gameState.mode === 'player-vs-ai') {
+                playRound(hand, getAiHand(gameState.history.p1));
+                gameState.history.p1.push(hand);
+            } else if (gameState.mode === 'player-vs-player') {
+                if (gameState.currentPlayer === 'p1') {
+                    gameState.p1TurnChoice = hand;
+                    gameState.currentPlayer = 'p2';
+                    DOMElements.playerHand.innerHTML = CHECK_SVG;
+                    DOMElements.aiHand.textContent = '?';
+                } else {
+                    playRound(gameState.p1TurnChoice, hand);
+                    gameState.p1TurnChoice = null;
+                    gameState.currentPlayer = 'p1';
                 }
-                enablePlayerChoices(false);
-                playRound(player1HandChoice, player2HandChoice);
-                player1HandChoice = null;
-                currentPlayerTurn = 'player1';
             }
+            updateUI();
         }
 
         function playRound(hand1, hand2) {
-            if (isGameOver) return;
-            clearTimeout(roundResetTimeoutId);
-            currentRound++;
-
-            scores.player1Hands[hand1]++;
-            scores.player2Hands[hand2]++;
-
+            if (gameState.isOver) return;
+            gameState.currentRound++;
+            gameState.handsCount.p1[hand1]++;
+            gameState.handsCount.p2[hand2]++;
             const winner = determineWinner(hand1, hand2);
-            if (winner === 'player1') scores.player1++;
-            else if (winner === 'player2') scores.player2++;
-            else scores.draw++;
-
-            updateScoreboard();
-            updateRoundInfo();
-            updateHandsStatsUI();
+            let resultMessage = '', resultClass = '';
+            if (winner === 'p1') { gameState.scores.p1++; resultMessage = `${DOMElements.playerName.textContent} の勝ち！`; resultClass = 'win'; }
+            else if (winner === 'p2') { gameState.scores.p2++; resultMessage = `${DOMElements.aiName.textContent} の勝ち！`; resultClass = 'lose'; }
+            else { gameState.scores.draw++; resultMessage = 'あいこ！'; resultClass = 'draw'; }
+            gameState.history.p1_scores.push(gameState.scores.p1);
+            gameState.history.p2_scores.push(gameState.scores.p2);
+            gameState.history.draw_scores.push(gameState.scores.draw);
+            gameState.history.rounds.push(gameState.currentRound);
             updateHandDisplays(hand1, hand2);
-
-            let p1Name = playerNameDisplay.textContent.split(':')[0].trim();
-            let p2Name = aiNameDisplay.textContent.split(':')[0].trim();
-            let winnerName = (winner === 'player1') ? `${p1Name}の勝ち！` : (winner === 'player2') ? `${p2Name}の勝ち！` : "あいこ！";
-            fadeInElementText(resultTextDisplay, winnerName);
-
-            updateResultsChart();
-            updateHandsBarChart(); // Changed to update bar chart
-            if (gameMode === 'player-vs-ai') saveGameData();
-
+            setResultMessage(resultMessage, resultClass);
+            if (gameState.settings.dataAnalysisEnabled) updateAllCharts();
+            updateUI();
             checkGameEnd();
-
-            if (!isGameOver && !isGamePaused) {
-                const delay = (gameMode === 'ai-vs-ai') ? Math.max(50, (1000 / aiVsAiSpeed) * 0.7) : 1500;
-                roundResetTimeoutId = setTimeout(() => {
-                    if (isGameOver || isGamePaused) return;
-                    resetHandDisplays();
-                    fadeInElementText(resultTextDisplay, getWaitingMessage());
-                    if (gameMode !== 'ai-vs-ai') {
-                        enablePlayerChoices(true);
-                        updateTurnIndicator();
-                    }
-                }, delay);
-            } else if (isGameOver) {
-                enablePlayerChoices(false);
-                updateStartPauseButtonState();
+            if (!gameState.isOver && !gameState.isPaused) {
+                const delay = (gameState.mode === 'ai-vs-ai') ? Math.max(50, 1000 / DOMElements.aiSpeedSlider.value) : 2000;
+                roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
             }
         }
-
-        function determineWinner(hand1, hand2) {
-            if (hand1 === hand2) return 'draw';
-            return (WIN_CONDITIONS[hand1] === hand2) ? 'player1' : 'player2';
-        }
-
-        function getAiHand(history) {
-            const historyLength = history.length;
-            const explorationRate = 0.20;
-            if (Math.random() < explorationRate || historyLength < 5) {
-                return HANDS[Math.floor(Math.random() * HANDS.length)];
-            }
-            const lookback = Math.min(historyLength, 10);
-            const recentHistory = history.slice(-lookback);
-            const counts = recentHistory.reduce((acc, move) => {
-                acc[move] = (acc[move] || 0) + 1; return acc;
-            }, {});
-            let mostFrequentMove = null, maxCount = 0;
-            for (const move in counts) {
-                if (counts[move] > maxCount) { maxCount = counts[move]; mostFrequentMove = move; }
-                else if (counts[move] === maxCount) { mostFrequentMove = null; }
-            }
-            if (mostFrequentMove && maxCount > lookback / 2.5) {
-                const winningMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === mostFrequentMove);
-                if (winningMove) return winningMove;
-            }
-            const lastMove = history[historyLength - 1];
-            const counterMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === lastMove);
-            if (counterMove && Math.random() < 0.6) return counterMove;
-            return HANDS[Math.floor(Math.random() * HANDS.length)];
-        }
-
+        
+        function determineWinner(hand1, hand2) { if (hand1 === hand2) return 'draw'; return WIN_CONDITIONS[hand1] === hand2 ? 'p1' : 'p2'; }
+        function getAiHand(history) { if (Math.random() < 0.2 || history.length < 5) return HANDS[Math.floor(Math.random() * 3)]; const winningMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === history[history.length - 1]); return winningMove || HANDS[Math.floor(Math.random() * 3)]; }
 
         function checkGameEnd() {
-             if (isGameOver) return;
-             if (currentGameLength !== Infinity && currentRound >= currentGameLength) {
-                 isGameOver = true; isGamePaused = true; clearTimeout(roundResetTimeoutId);
-                 let finalMessage = `勝負終了！ (${formatNumber(scores.player1)} 対 ${formatNumber(scores.player2)}`;
-                 if (scores.draw > 0) finalMessage += ` あいこ ${formatNumber(scores.draw)}回`;
-                 finalMessage += `) `;
-                 let p1FinalName = playerNameDisplay.textContent.split(':')[0].trim();
-                 let p2FinalName = aiNameDisplay.textContent.split(':')[0].trim();
-                 if (scores.player1 > scores.player2) finalMessage += `${p1FinalName}の勝ちです！`;
-                 else if (scores.player2 > scores.player1) finalMessage += `${p2FinalName}の勝ちです！`;
-                 else finalMessage += "引き分けです！";
-                 fadeInElementText(resultTextDisplay, finalMessage);
-                 showNotification(finalMessage, false, true, 4000);
-                 enablePlayerChoices(false);
-                 if (gameMode === 'ai-vs-ai') {
-                     if (isAiVsAiRunning) stopAiVsAi();
-                     aiSpeedSlider.disabled = true; aiVsAiStartStopButton.disabled = true; hideElement(aiQuitButton);
-                 } else {
-                     startPauseButton.disabled = true; hideElement(quitButton); hideElement(turnIndicator);
-                 }
-                 updateStartPauseButtonState();
-                 setTimeout(resetForNewGameSelection, 4500);
-             }
-        }
-
-        function resetForNewGameSelection() {
-             hideElement(gameAreaDiv);
-             hideElement(chartContainerDiv);
-             hideElement(handsChartContainerDiv);
-             hideElement(playerControlsDiv);
-             hideElement(aiVsAiControlsDiv);
-             hideElement(turnIndicator);
-             hideElement(resultsZoomControlsDiv);
-             hideElement(handsZoomControlsDiv);
-             hideElement(handsStatsDiv);
-             hideElement(quitButton); hideElement(aiQuitButton);
-             fadeInElement(modeSelectionDiv);
-             hideElement(gameLengthSelectionDiv);
-             if (resultsChartInstance) { resultsChartInstance.destroy(); resultsChartInstance = null; }
-             if (handsChartInstance) { handsChartInstance.destroy(); handsChartInstance = null; } // For bar chart
-             resultsChartData = { labels: [], datasets: [] };
-             // handsChartData is not needed for bar chart state in this way
-             resetGameFullState();
-             gameMode = '';
-             updateScoreboard();
-             updateHandsStatsUI();
-             resetHandDisplays();
-             fadeInElementText(resultTextDisplay, '');
-             fadeInElementText(roundInfoDisplay, '');
-             if (isNotificationVisible) hideNotification(true);
-        }
-
-        function startAiVsAi() {
-            if (isGameOver || isAiVsAiRunning) return;
-            isAiVsAiRunning = true; isGamePaused = false;
-            aiSpeedSlider.disabled = true;
-            fadeInElementText(resultTextDisplay, '対戦中...');
-            updateStartPauseButtonState(); runAiVsAiRound();
-        }
-        function stopAiVsAi() {
-            if (!isAiVsAiRunning && !isGamePaused && !isGameOver) return;
-            isAiVsAiRunning = false; isGamePaused = true;
-            clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null;
-            if (!isGameOver) {
-                aiSpeedSlider.disabled = false;
-                fadeInElementText(resultTextDisplay, '一時停止中... 「スタート」で再開します。');
-            } else { aiSpeedSlider.disabled = true; }
-            updateStartPauseButtonState();
-        }
-        function runAiVsAiRound() {
-             if (isGameOver || isGamePaused || !isAiVsAiRunning) {
-                 clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null; isAiVsAiRunning = false;
-                 if (!isGameOver) updateStartPauseButtonState(); return;
-             }
-             const ai1Hand = getAiHand(ai2History); const ai2Hand = getAiHand(ai1History);
-             ai1History.push(ai1Hand); ai2History.push(ai2Hand);
-             const MAX_AI_HISTORY = 200;
-             if (ai1History.length > MAX_AI_HISTORY) ai1History.shift();
-             if (ai2History.length > MAX_AI_HISTORY) ai2History.shift();
-             playRound(ai1Hand, ai2Hand);
-             if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
-                 clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null;
-                 setTimeout(() => {
-                     if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
-                         aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
-                    }
-                 }, 50);
-             } else { clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null; }
-        }
-        function updateSpeedDisplay(value) {
-            aiVsAiSpeed = parseInt(value, 10);
-            aiSpeedDisplay.textContent = aiVsAiSpeed;
-            if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
-                clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null;
-                setTimeout(() => {
-                    if (isAiVsAiRunning && !isGamePaused && !isGameOver) {
-                         aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / aiVsAiSpeed);
-                    }
-                }, 50);
+            if (gameState.gameLength !== Infinity && gameState.currentRound >= gameState.gameLength) {
+                gameState.isOver = true;
+                gameState.isPaused = true;
+                let finalMessage = '勝負終了！ ';
+                if (gameState.scores.p1 > gameState.scores.p2) finalMessage += `${DOMElements.playerName.textContent} の完全勝利！`;
+                else if (gameState.scores.p2 > gameState.scores.p1) finalMessage += `${DOMElements.aiName.textContent} の完全勝利！`;
+                else finalMessage += '引き分けです！';
+                setResultMessage(finalMessage, 'draw');
+                showNotification(finalMessage, 3000);
             }
+            updateUI();
         }
 
-        function updateScoreboard() {
-            let p1Label = playerNameDisplay.textContent.split(':')[0].trim() || 'Player 1';
-            let p2Label = aiNameDisplay.textContent.split(':')[0].trim() || 'Player 2';
-            fadeInElementText(scoreboardPlayerDisplay, `${p1Label}: ${formatNumber(scores.player1)}`);
-            fadeInElementText(scoreboardDrawDisplay, `あいこ: ${formatNumber(scores.draw)}`);
-            fadeInElementText(scoreboardAiDisplay, `${p2Label}: ${formatNumber(scores.player2)}`);
-            const diff = scores.player1 - scores.player2;
-            let diffText = '同点';
-            if (diff > 0) diffText = `${p1Label} が ${formatNumber(diff)} リード`;
-            else if (diff < 0) diffText = `${p2Label} が ${formatNumber(Math.abs(diff))} リード`;
-            fadeInElementText(scoreDifferenceDisplay, diffText);
+        function startAiVsAi() { DOMElements.aiSpeedSlider.disabled = true; aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / DOMElements.aiSpeedSlider.value); }
+        function stopAiVsAi() { DOMElements.aiSpeedSlider.disabled = false; clearInterval(aiVsAiIntervalId); }
+        function runAiVsAiRound() { if (gameState.isPaused || gameState.isOver) { stopAiVsAi(); return; } const hand1 = getAiHand(gameState.history.p2), hand2 = getAiHand(gameState.history.p1); gameState.history.p1.push(hand1); gameState.history.p2.push(hand2); if (gameState.history.p1.length > 200) gameState.history.p1.shift(); if (gameState.history.p2.length > 200) gameState.history.p2.shift(); playRound(hand1, hand2); }
+        function updateSpeedDisplay(value) { DOMElements.aiSpeedDisplay.textContent = value; if (!gameState.isPaused) { stopAiVsAi(); startAiVsAi(); } }
+        
+        function updateUI() {
+            const lengthDisplay = gameState.gameLength === Infinity ? '∞' : gameState.gameLength;
+            DOMElements.roundInfo.textContent = `Round: ${gameState.currentRound} / ${lengthDisplay}`;
+            DOMElements.playerScoreSpan.textContent = gameState.scores.p1;
+            DOMElements.aiScoreSpan.textContent = gameState.scores.p2;
+            DOMElements.drawScoreSpan.textContent = gameState.scores.draw;
+            const p1ScoreEl = DOMElements.playerScoreSpan.parentElement;
+            const p2ScoreEl = DOMElements.aiScoreSpan.parentElement;
+            p1ScoreEl.classList.toggle('leading', gameState.scores.p1 > gameState.scores.p2);
+            p2ScoreEl.classList.toggle('leading', gameState.scores.p2 > gameState.scores.p1);
+            DOMElements.p1Rock.textContent = gameState.handsCount.p1.rock;
+            DOMElements.p1Paper.textContent = gameState.handsCount.p1.paper;
+            DOMElements.p1Scissors.textContent = gameState.handsCount.p1.scissors;
+            DOMElements.p2Rock.textContent = gameState.handsCount.p2.rock;
+            DOMElements.p2Paper.textContent = gameState.handsCount.p2.paper;
+            DOMElements.p2Scissors.textContent = gameState.handsCount.p2.scissors;
+            
+            const isPlayerTurn = !gameState.isPaused && !gameState.isOver;
+            DOMElements.playerChoiceButtons.forEach(b => b.disabled = !isPlayerTurn);
+            
+            const startBtn = DOMElements.startPauseButton, aiStartBtn = DOMElements.aiStartStopButton;
+            const quitBtn = DOMElements.quitButton, aiQuitBtn = DOMElements.aiQuitButton;
+            const newGameBtn = DOMElements.newGameButton, aiNewGameBtn = DOMElements.aiNewGameButton;
+            
+            [startBtn, aiStartBtn, quitBtn, aiQuitBtn, newGameBtn, aiNewGameBtn].forEach(b => b.style.display = 'none');
+
+            const currentStartBtn = gameState.mode === 'ai-vs-ai' ? aiStartBtn : startBtn;
+            const currentQuitBtn = gameState.mode === 'ai-vs-ai' ? aiQuitBtn : quitBtn;
+            const currentNewGameBtn = gameState.mode === 'ai-vs-ai' ? aiNewGameBtn : newGameBtn;
+
+            if (gameState.isOver) {
+                currentNewGameBtn.style.display = 'inline-block';
+            } else {
+                currentStartBtn.style.display = 'inline-block';
+                if (!gameState.isPaused) currentQuitBtn.style.display = 'inline-block';
+                
+                if (gameState.isPaused) {
+                    currentStartBtn.textContent = 'スタート';
+                    currentStartBtn.classList.remove('warning');
+                } else {
+                    currentStartBtn.textContent = '一時停止';
+                    currentStartBtn.classList.add('warning');
+                }
+            }
+            DOMElements.turnIndicator.style.display = gameState.mode === 'player-vs-player' ? 'block' : 'none';
+            if (gameState.mode === 'player-vs-player') DOMElements.turnIndicator.textContent = isPlayerTurn ? `${gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent} の番です` : '';
         }
-        function updateRoundInfo() {
-             const lengthDisplay = currentGameLength === Infinity ? '∞' : formatNumber(currentGameLength);
-             fadeInElementText(roundInfoDisplay, `ラウンド: ${formatNumber(currentRound)} / ${lengthDisplay}`);
-         }
-
-        function updateHandsStatsUI() {
-            fadeInElementText(p1RockCount, formatNumber(scores.player1Hands.rock));
-            fadeInElementText(p1PaperCount, formatNumber(scores.player1Hands.paper));
-            fadeInElementText(p1ScissorsCount, formatNumber(scores.player1Hands.scissors));
-            fadeInElementText(p2RockCount, formatNumber(scores.player2Hands.rock));
-            fadeInElementText(p2PaperCount, formatNumber(scores.player2Hands.paper));
-            fadeInElementText(p2ScissorsCount, formatNumber(scores.player2Hands.scissors));
-        }
-
-        function updateTurnIndicator() {
-             if (gameMode !== 'player-vs-player' || isGamePaused || isGameOver) {
-                 hideElement(turnIndicator);
-                 playerControlsTitle.textContent = 'あなたの手を選択してください:';
-                 return;
-             }
-             fadeInElement(turnIndicator);
-             const turnPlayerName = (currentPlayerTurn === 'player1') ?
-                                    playerNameDisplay.textContent.split(':')[0].trim() :
-                                    aiNameDisplay.textContent.split(':')[0].trim();
-             const message = `${turnPlayerName}の番: 手を選択してください`;
-             fadeInElementText(turnIndicator, message);
-             playerControlsTitle.textContent = `${turnPlayerName}の番:`;
-         }
-
-         function getWaitingMessage() {
-             if (isGameOver) return resultTextDisplay.textContent;
-             if (isGamePaused) return '一時停止中... 「スタート」で再開します。';
-             if (currentRound === 0 && isGamePaused) return '「スタート」を押してゲームを開始してください。';
-             if (gameMode === 'player-vs-ai') return 'あなたの手を選んでください。';
-             if (gameMode === 'player-vs-player') {
-                 const turnPlayerName = (currentPlayerTurn === 'player1') ?
-                                        playerNameDisplay.textContent.split(':')[0].trim() :
-                                        aiNameDisplay.textContent.split(':')[0].trim();
-                 return `${turnPlayerName}の手を待っています...`;
-             }
-             if (gameMode === 'ai-vs-ai') return '対戦中...';
-             return '結果を待っています...';
-         }
 
         function updateHandDisplays(hand1, hand2) {
-             playerHandDisplay.style.opacity = 0; aiHandDisplay.style.opacity = 0;
-             playerHandDisplay.textContent = HAND_EMOJIS[hand1] || '?';
-             aiHandDisplay.textContent = HAND_EMOJIS[hand2] || '?';
-             void playerHandDisplay.offsetWidth; void aiHandDisplay.offsetWidth;
-             playerHandDisplay.classList.add('fade-in'); aiHandDisplay.classList.add('fade-in');
-             playerHandDisplay.addEventListener('animationend', () => playerHandDisplay.classList.remove('fade-in'), { once: true });
-             aiHandDisplay.addEventListener('animationend', () => aiHandDisplay.classList.remove('fade-in'), { once: true });
+            [DOMElements.playerHand, DOMElements.aiHand].forEach(el => el.classList.remove('pop-in'));
+            void DOMElements.playerHand.offsetWidth;
+            DOMElements.playerHand.innerHTML = HAND_EMOJIS[hand1];
+            DOMElements.aiHand.innerHTML = HAND_EMOJIS[hand2];
+            if (gameState.settings.popupsEnabled) {
+                DOMElements.playerHand.classList.add('pop-in');
+                DOMElements.aiHand.classList.add('pop-in');
+            }
         }
-         function resetHandDisplays() {
-             clearTimeout(roundResetTimeoutId);
-             playerHandDisplay.classList.remove('fade-in'); aiHandDisplay.classList.remove('fade-in');
-             playerHandDisplay.style.opacity = 1; aiHandDisplay.style.opacity = 1;
-             playerHandDisplay.textContent = '?'; aiHandDisplay.textContent = '?';
-         }
-         function enablePlayerChoices(enable) {
-             playerChoiceButtons.forEach(button => { button.disabled = !enable; });
-         }
 
-
-        function initializeResultsChart() {
-            if (resultsChartInstance) resultsChartInstance.destroy();
-            const ctx = document.getElementById('resultsChart').getContext('2d');
-            const colors = getChartColors();
-            let p1Label = 'あなたの勝ち数', p2Label = 'AIの勝ち数';
-             if (gameMode === 'ai-vs-ai') { p1Label = 'AI 1の勝ち数'; p2Label = 'AI 2の勝ち数'; }
-             else if (gameMode === 'player-vs-player') { p1Label = 'あなたの勝ち数'; p2Label = 'ユーザー2の勝ち数'; }
-             const diffLabel = 'スコア差';
-            resultsChartData = {
-                labels: [0],
-                datasets: [
-                    { label: p1Label, data: [0], borderColor: colors.accent1, tension: 0, fill: false, yAxisID: 'y' },
-                    { label: p2Label, data: [0], borderColor: colors.accent2, tension: 0, fill: false, yAxisID: 'y' },
-                    { label: 'あいこ', data: [0], borderColor: colors.accent3, tension: 0, fill: false, yAxisID: 'y' },
-                    { label: diffLabel, data: [0], borderColor: colors.accent4, tension: 0, fill: false, borderDash: [5, 5], yAxisID: 'y1' }
-                ]
+        function resetHandDisplays() { clearTimeout(roundResetTimeoutId); [DOMElements.playerHand, DOMElements.aiHand].forEach(el => { el.classList.remove('pop-in'); el.innerHTML = '?'; }); }
+        function setResultMessage(message, type = '') { DOMElements.resultDisplay.textContent = message; DOMElements.resultDisplay.className = 'result-display'; if (type) DOMElements.resultDisplay.classList.add(`result-${type}`); }
+        function getWaitingMessage() { if (gameState.isOver) return DOMElements.resultDisplay.textContent; if (gameState.isPaused && gameState.currentRound === 0) return '「スタート」を押して開始'; if (gameState.isPaused) return '一時停止中...'; if (gameState.mode === 'ai-vs-ai') return '対戦中...'; let who = gameState.mode === 'player-vs-player' ? (gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent) : 'あなた'; return `${who}の手を選択してください`; }
+        
+        function resetGame(length = 0) {
+            gameState = {
+                mode: gameState.mode || '', gameLength: length, setupComplete: false, currentRound: 0,
+                scores: { p1: 0, p2: 0, draw: 0 },
+                handsCount: { p1: { rock: 0, paper: 0, scissors: 0 }, p2: { rock: 0, paper: 0, scissors: 0 } },
+                history: { p1: [], p2: [], rounds: [0], p1_scores: [0], p2_scores: [0], draw_scores: [0] },
+                isPaused: true, isOver: false,
+                p1TurnChoice: null, currentPlayer: 'p1',
+                settings: gameState.settings || { popupsEnabled: true, dataAnalysisEnabled: true }
             };
-            if(resultsZoomToggleSwitch) resultsZoomToggleSwitch.checked = isResultsZoomEnabled;
-            resultsChartInstance = new Chart(ctx, {
-                type: 'line', data: resultsChartData,
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    animation: { duration: gameMode === 'ai-vs-ai' ? 0 : 200 },
-                    scales: {
-                         y: { type: 'linear', display: true, position: 'left', grid: { color: colors.gridColor }, ticks: { color: colors.labelColor, callback: value => formatNumber(value), beginAtZero: true }, grace: '10%', title: { display: true, text: '累計スコア', color: colors.titleColor } },
-                        y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: colors.labelColor, callback: value => formatNumber(value) }, grace: '10%', title: { display: true, text: diffLabel, color: colors.titleColor } },
-                        x: { grid: { color: colors.gridColor }, ticks: { color: colors.labelColor, callback: function(value) { const label = this.getLabelForValue(value); if (typeof label === 'number' && label % 1 === 0) { return formatNumber(label); } return formatNumber(label); }, maxTicksLimit: 15, autoSkip: true }, title: { display: true, text: 'ラウンド数', color: colors.titleColor } }
-                    },
-                    plugins: {
-                        legend: { position: 'top', labels: { color: colors.labelColor } },
-                        title: { display: true, text: '勝負の推移', color: colors.titleColor, font: { size: 16 } },
-                        zoom: { pan: { enabled: isResultsZoomEnabled, mode: 'xy', threshold: 5 }, zoom: { wheel: { enabled: isResultsZoomEnabled }, pinch: { enabled: isResultsZoomEnabled }, mode: 'xy', drag: { enabled: false } } }
-                    },
-                    elements: { point:{ radius: 0 }, line: { borderWidth: 2 } },
-                    interaction: { mode: 'index', intersect: false }, hover: { mode: 'nearest', intersect: false }
-                }
-            });
-            updateChartColors(resultsChartInstance);
+            clearTimeout(roundResetTimeoutId); clearInterval(aiVsAiIntervalId);
+            DOMElements.popupsEnabledSwitch.checked = gameState.settings.popupsEnabled;
+            DOMElements.dataAnalysisEnabledSwitch.checked = gameState.settings.dataAnalysisEnabled;
+            DOMElements.dataPanel.style.display = gameState.settings.dataAnalysisEnabled ? 'flex' : 'none';
+            DOMElements.gameContentGrid.classList.toggle('show-data-panel', gameState.settings.dataAnalysisEnabled);
+            DOMElements.modeSelectionContainer.style.display = 'block';
+            DOMElements.gameLengthContainer.style.display = 'none';
+            resetHandDisplays();
+            setResultMessage('「スタート」を押して開始');
+            updateUI();
         }
-
-        function initializeHandsBarChart() { // <<< RENAMED and MODIFIED for Bar Chart
-            if (handsChartInstance) handsChartInstance.destroy();
-            const ctx = document.getElementById('handsChart').getContext('2d');
-            const colors = getChartColors();
-
-            let p1Name = playerNameDisplay.textContent.split(':')[0].trim() || 'Player 1';
-            let p2Name = aiNameDisplay.textContent.split(':')[0].trim() || 'Player 2';
-
-            const initialP1Data = [scores.player1Hands.rock, scores.player1Hands.paper, scores.player1Hands.scissors];
-            const initialP2Data = [scores.player2Hands.rock, scores.player2Hands.paper, scores.player2Hands.scissors];
-
-            // Bar chart data structure
-            const data = {
-                labels: HAND_EMOJIS_ARRAY, // ['✊', '✋', '✌️']
-                datasets: [
-                    {
-                        label: p1Name,
-                        data: initialP1Data,
-                        backgroundColor: colors.accent1, // Use accent1 for P1 bars
-                        borderColor: colors.accent1,
-                        borderWidth: 1
-                    },
-                    {
-                        label: p2Name,
-                        data: initialP2Data,
-                        backgroundColor: colors.accent2, // Use accent2 for P2 bars
-                        borderColor: colors.accent2,
-                        borderWidth: 1
-                    }
-                ]
-            };
-
-             if(handsZoomToggleSwitch) handsZoomToggleSwitch.checked = isHandsZoomEnabled; // Still set, though zoom is less useful
-            handsChartInstance = new Chart(ctx, {
-                type: 'bar', // <<< CHANGED to 'bar'
-                data: data,
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    animation: { duration: 200 }, // Animation for bar updates
-                    scales: {
-                         y: {
-                            beginAtZero: true,
-                            grid: { color: colors.gridColor },
-                            ticks: { color: colors.labelColor, stepSize: 1, callback: value => formatNumber(value) }, // Ensure integer ticks
-                            title: { display: true, text: '選択回数', color: colors.titleColor }
-                         },
-                        x: { // X-axis shows hands (Rock, Paper, Scissors)
-                            grid: { color: colors.gridColor },
-                            ticks: { color: colors.labelColor }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'top', labels: { color: colors.labelColor } },
-                        title: { display: true, text: '各手の合計選択回数', color: colors.titleColor, font: { size: 16 } },
-                        zoom: { // Zoom might not be very useful for a fixed bar chart
-                            pan: { enabled: isHandsZoomEnabled, mode: 'y', threshold: 5 }, // Pan Y only
-                            zoom: { wheel: { enabled: isHandsZoomEnabled, mode: 'y' }, pinch: { enabled: isHandsZoomEnabled, mode: 'y' }, drag: { enabled: false } }
-                        }
-                    },
-                    indexAxis: 'x', // Bars are vertical (categories on x-axis)
-                }
-            });
-            updateChartColors(handsChartInstance, true); // Pass isBarChart = true
-        }
-
-
-        function resetZoom(chartId) {
-            if (chartId === 'resultsChart' && resultsChartInstance) resultsChartInstance.resetZoom();
-            if (chartId === 'handsChart' && handsChartInstance) handsChartInstance.resetZoom();
-        }
-        function toggleZoomSwitch(isChecked, chartId) {
-            if (chartId === 'resultsChart') {
-                isResultsZoomEnabled = isChecked;
-                enableZoom(resultsChartInstance, isResultsZoomEnabled);
-            } else if (chartId === 'handsChart') {
-                isHandsZoomEnabled = isChecked;
-                enableZoom(handsChartInstance, isHandsZoomEnabled, true); // Pass isBarChart for Y-axis only zoom
-            }
-        }
-        function enableZoom(chart, enable, isBarChart = false) {
-            if (!chart) return;
-            const zoomMode = isBarChart ? 'y' : 'xy';
-            chart.options.plugins.zoom.zoom.wheel.enabled = enable;
-            chart.options.plugins.zoom.zoom.wheel.mode = zoomMode;
-            chart.options.plugins.zoom.zoom.pinch.enabled = enable;
-            chart.options.plugins.zoom.zoom.pinch.mode = zoomMode;
-            chart.options.plugins.zoom.pan.enabled = enable;
-            chart.options.plugins.zoom.pan.mode = zoomMode;
-            chart.update('none');
-        }
-
-        function updateResultsChart() {
-            if (!resultsChartInstance || !resultsChartData) return;
-            const scoreDiff = scores.player1 - scores.player2;
-            resultsChartData.labels.push(currentRound);
-            resultsChartData.datasets[0].data.push(scores.player1);
-            resultsChartData.datasets[1].data.push(scores.player2);
-            resultsChartData.datasets[2].data.push(scores.draw);
-            resultsChartData.datasets[3].data.push(scoreDiff);
-            const MAX_CHART_POINTS = 200;
-            if (resultsChartData.labels.length > MAX_CHART_POINTS) {
-                const shiftAmount = resultsChartData.labels.length - MAX_CHART_POINTS;
-                resultsChartData.labels.splice(0, shiftAmount);
-                resultsChartData.datasets.forEach(dataset => dataset.data.splice(0, shiftAmount));
-            }
-            resultsChartInstance.update('none');
-        }
-
-        function updateHandsBarChart() { // <<< RENAMED and MODIFIED for Bar Chart
-            if (!handsChartInstance) return;
-
-            handsChartInstance.data.datasets[0].data = [
-                scores.player1Hands.rock,
-                scores.player1Hands.paper,
-                scores.player1Hands.scissors
-            ];
-            handsChartInstance.data.datasets[1].data = [
-                scores.player2Hands.rock,
-                scores.player2Hands.paper,
-                scores.player2Hands.scissors
-            ];
-            handsChartInstance.update(); // Use default animation or 'none' if preferred
-        }
-
-
-        function showNotification(message, showConfirm = false, isSuccess = false, autoHideDelay = 4000) {
-            if (notificationTimeoutId) { clearTimeout(notificationTimeoutId); notificationTimeoutId = null; }
-            if (isNotificationVisible) {
-                notificationArea.style.opacity = 0;
-                 setTimeout(() => { _displayNotification(message, showConfirm, isSuccess, autoHideDelay); }, 150);
-            } else { _displayNotification(message, showConfirm, isSuccess, autoHideDelay); }
-        }
-        function _displayNotification(message, showConfirm, isSuccess, autoHideDelay){
-             isNotificationVisible = false; notificationMessage.textContent = message;
-             notificationArea.style.display = 'block'; notificationArea.style.opacity = 0;
-             void notificationArea.offsetWidth; notificationArea.classList.add('fade-in');
-             isNotificationVisible = true;
-             if (!showConfirm && autoHideDelay > 0) {
-                 notificationTimeoutId = setTimeout(() => {
-                      if (isNotificationVisible) { hideNotification(); } notificationTimeoutId = null;
-                 }, autoHideDelay);
-             }
-        }
-        function hideNotification(immediately = false) {
-            if (!isNotificationVisible) return;
-            if (notificationTimeoutId) { clearTimeout(notificationTimeoutId); notificationTimeoutId = null; }
-            isNotificationVisible = false;
-            if (immediately) {
-                 notificationArea.style.opacity = 0; notificationArea.style.display = 'none';
-                 notificationArea.classList.remove('fade-in');
-            } else {
-                notificationArea.style.opacity = 0;
-                setTimeout(() => {
-                    if (!isNotificationVisible) {
-                         notificationArea.style.display = 'none'; notificationArea.classList.remove('fade-in');
-                    }
-                }, 300);
-            }
-        }
-
-         function resetScoresAndHistories() {
-             scores = {
-                player1: 0, player2: 0, draw: 0,
-                player1Hands: { rock: 0, paper: 0, scissors: 0 },
-                player2Hands: { rock: 0, paper: 0, scissors: 0 }
-            };
-             ai1History = []; ai2History = [];
-         }
-         function resetGameFullState() {
-             resetScoresAndHistories();
-             currentRound = 0; isGameOver = false; isGamePaused = true; isAiVsAiRunning = false;
-             currentPlayerTurn = 'player1'; player1HandChoice = null;
-             clearTimeout(roundResetTimeoutId); clearTimeout(notificationTimeoutId);
-             clearInterval(aiVsAiIntervalId); aiVsAiIntervalId = null;
-         }
-
-        function saveGameData() {
-             if (gameMode === 'player-vs-ai') {
-                 try {
-                    const MAX_SAVE_HISTORY = 1000;
-                    const historyToSave = playerHistory.slice(-MAX_SAVE_HISTORY);
-                    localStorage.setItem('rpsGameData', JSON.stringify({ playerHistory: historyToSave }));
-                 } catch (e) { console.error("Error saving game data:", e); }
-             }
-        }
-        function loadGameData() {
-             try {
-                const savedData = localStorage.getItem('rpsGameData');
-                if (savedData) {
-                    const parsedData = JSON.parse(savedData);
-                    const MAX_LOAD_HISTORY = 1000;
-                    playerHistory = Array.isArray(parsedData.playerHistory) ? parsedData.playerHistory.slice(-MAX_LOAD_HISTORY) : [];
-                } else { playerHistory = []; }
-             } catch (e) { console.error("Error loading game data:", e); playerHistory = []; }
-        }
-
-        function formatNumber(num) {
-            if (typeof num !== 'number' || !isFinite(num)) {
-                if (num === Infinity) return '∞'; if (isNaN(num)) return '?'; return num ? String(num) : '0';
-            }
-            const sign = num < 0 ? '-' : ''; let absNum = Math.abs(num);
-            const googol = 1e100;
-            if (absNum >= googol) {
-                 let unitKey = null; for (const key of UNIT_KEYS.reverse()) { if (absNum >= Math.pow(10, key)) { unitKey = key; break; } } UNIT_KEYS.reverse();
-                 if (unitKey) { const value = absNum / Math.pow(10, unitKey); return sign + value.toFixed(2).replace(/(\.0+|(?<=\.\d)0+)$/, '') + UNITS[unitKey]; }
-                 else { return sign + absNum.toExponential(2); }
-            }
-            for (const key of UNIT_KEYS) {
-                const threshold = Math.pow(10, key);
-                if (absNum >= threshold) {
-                    const value = absNum / threshold; let formattedNum;
-                    if (value < 10) { formattedNum = value.toFixed(2); } else if (value < 100) { formattedNum = value.toFixed(1); } else { formattedNum = value.toFixed(0); }
-                    formattedNum = formattedNum.replace(/(\.0+|(?<=\.\d)0+)$/, ''); return sign + formattedNum + UNITS[key];
-                }
-            }
-             if (absNum < 1000) { return sign + absNum.toString(); } return sign + absNum.toString();
-        }
-
-
-        function fadeInElement(element) {
-            if (!element) return;
-            const computedStyle = getComputedStyle(element); const currentOpacity = parseFloat(computedStyle.opacity); const isDisplayed = computedStyle.display !== 'none';
-            if (isDisplayed && currentOpacity === 1 && !element.classList.contains('fade-in')) { element.classList.remove('initially-hidden'); return; }
-            if (isDisplayed && currentOpacity > 0 && currentOpacity < 1 && computedStyle.animationName && computedStyle.animationName.includes('fadeIn') && !element.classList.contains('initially-hidden-triggered-by-js')) { return; }
-            element.classList.remove('initially-hidden'); element.classList.add('initially-hidden-triggered-by-js');
+        
+        function getChartOptions(isDarkMode) { return { chart: { fontFamily: 'Roboto, sans-serif', foreColor: isDarkMode ? '#e0e0e0' : '#2c3e50', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } } }, xaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' } }, axisBorder: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, axisTicks: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' } }, yaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' }, formatter: (val) => Math.round(val) } }, grid: { borderColor: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, legend: { labels: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', useSeriesColors: false }, markers: { radius: 4 } }, tooltip: { theme: isDarkMode ? 'dark' : 'light' } }; }
+        
+        // ▼▼▼ 変更点2: グラフの初期化処理に高さ(height)指定を追加しました ▼▼▼
+        function initializeCharts() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const commonOptions = getChartOptions(isDarkMode);
+            const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
             
-            let displayStyle = 'block';
-            if (element.classList.contains('zoom-controls') || element.id === 'player-controls' || element.id === 'ai-vs-ai-controls') {
-                displayStyle = 'flex';
-            } else if (element.id === 'hands-stats') {
-                displayStyle = 'grid';
-            }
-            element.style.display = displayStyle;
+            if (resultsChart) resultsChart.destroy();
+            resultsChart = new ApexCharts(document.querySelector("#resultsChart"), { 
+                ...commonOptions, 
+                series: [], 
+                colors: colors, 
+                // heightプロパティを追加してお好みの高さに設定します (例: 500px)
+                chart: { ...commonOptions.chart, id: 'resultsChart', type: 'line', height: 500 }, 
+                stroke: { curve: 'straight', width: 2 }, 
+                xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: 1 },
+                yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, 
+                title: { text: '勝負の推移', align: 'left' } 
+            });
+            
+            if (handsChart) handsChart.destroy();
+            handsChart = new ApexCharts(document.querySelector("#handsChart"), { 
+                ...commonOptions, 
+                series: [], 
+                colors: colors.slice(0, 2), 
+                // こちらのグラフにもheightプロパティを追加します (例: 450px)
+                chart: { ...commonOptions.chart, id: 'handsChart', type: 'bar', height: 450 }, 
+                plotOptions: { bar: { horizontal: false, columnWidth: '55%' } }, 
+                xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, 
+                yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } }, 
+                title: { text: '各手の合計選択回数', align: 'left' }, 
+                dataLabels: { enabled: false } 
+            });
 
-            if (element.classList.contains('fade-in')) { element.classList.remove('fade-in'); void element.offsetWidth; }
-            element.style.opacity = 0; void element.offsetWidth; element.classList.add('fade-in');
-            element.addEventListener('animationend', function handler() {
-                element.classList.remove('fade-in'); element.style.opacity = 1; element.classList.remove('initially-hidden-triggered-by-js');
-            }, { once: true });
-            setTimeout(() => {
-                if (element.classList.contains('fade-in')) { element.classList.remove('fade-in'); element.style.opacity = 1; }
-                else if (getComputedStyle(element).display !== 'none' && parseFloat(getComputedStyle(element).opacity) < 1) { element.style.opacity = 1; }
-                element.classList.remove('initially-hidden-triggered-by-js');
-            }, 550);
+            Promise.all([resultsChart.render(), handsChart.render()]).then(() => {
+                updateAllCharts();
+            });
         }
-        function hideElement(element) {
-            if (!element) return; if (element.style.display === 'none') return;
-            element.style.opacity = 0; element.classList.remove('fade-in'); element.classList.remove('initially-hidden-triggered-by-js');
-            setTimeout(() => { if (element.style.opacity === '0') { element.style.display = 'none'; } }, 300);
+        
+        function updateAllCharts() {
+            if (!resultsChart || !handsChart) return;
+
+            resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], gameState.mode !== 'ai-vs-ai');
+            handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
+            
+            if (resultsChart) {
+                const currentRound = gameState.currentRound;
+                let xAxisMin, xAxisMax;
+                if (currentRound > 200) {
+                    xAxisMin = currentRound - 200;
+                    xAxisMax = currentRound;
+                } else {
+                    xAxisMin = 0;
+                    xAxisMax = (currentRound === 0) ? 1 : currentRound;
+                }
+                
+                resultsChart.updateOptions({
+                    xaxis: {
+                        min: xAxisMin,
+                        max: xAxisMax
+                    }
+                });
+            }
         }
-         function fadeInElementText(element, text) {
-             if (!element) return;
-             const isVisible = element.style.display !== 'none' && element.style.opacity !== '0';
-             if (element.textContent === text && isVisible) return;
-             if (isVisible) {
-                 element.style.transition = 'opacity 0.15s ease-out'; element.style.opacity = 0;
-                 setTimeout(() => {
-                     element.textContent = text; if (element.style.display === 'none') element.style.display = ''; element.style.opacity = 1;
-                     setTimeout(() => element.style.transition = '', 150);
-                 }, 150);
-             } else {
-                 element.textContent = text; if (element.style.display === 'none') { element.style.opacity = 0; }
-             }
-         }
+        
+        function updateAllChartsTheme() { if (gameState.settings.dataAnalysisEnabled) { const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches); if (resultsChart) resultsChart.updateOptions(opts); if (handsChart) handsChart.updateOptions(opts); } }
+        function showNotification(message, duration = 3000) { clearTimeout(notificationTimeoutId); DOMElements.notificationMessage.textContent = message; DOMElements.notificationArea.classList.add('show'); notificationTimeoutId = setTimeout(() => DOMElements.notificationArea.classList.remove('show'), duration); }
+        
+        document.addEventListener('DOMContentLoaded', () => { resetGame(); initializeEventListeners(); showTab('setup'); });
     </script>
 </body>
 </html>
