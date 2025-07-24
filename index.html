@@ -192,7 +192,6 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; flex-shrink: 0; }
         .modal-title { font-size: 1.4em; font-weight: 700; margin: 0; }
         
-        /* ▼▼▼ 変更: 閉じるボタンのスタイル ▼▼▼ */
         .modal-close-button { border: none; background: transparent; color: var(--text-color); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; padding: 5px; display: flex; align-items: center; justify-content: center; }
         .modal-close-button:hover { opacity: 1; }
         .modal-close-button svg { width: 20px; height: 20px; }
@@ -394,7 +393,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modal-title" class="modal-title">対戦詳細</h3>
-                <!-- ▼▼▼ 変更: 閉じるボタンのアイコン ▼▼▼ -->
                 <button id="modal-close-button" class="modal-close-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
                         <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
@@ -640,9 +638,12 @@
         }
 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const historyText = opponentHistory.slice(-10).join(', ') || 'まだありません';
+        
+        // ▼▼▼ 変更 ▼▼▼: 履歴を過去100回まで取得するように変更
+        const historyText = opponentHistory.slice(-100).join(', ') || 'まだありません';
 
-        const prompt = `あなたは「${myName}」という名前のじゃんけんの達人です。対戦相手の過去10回の手の履歴は次の通りです: [${historyText}]。
+        // ▼▼▼ 変更 ▼▼▼: プロンプト内のテキストを「10回」から「100回」に変更
+        const prompt = `あなたは「${myName}」という名前のじゃんけんの達人です。対戦相手の過去100回の手の履歴は次の通りです: [${historyText}]。
         この履歴を分析し、相手が次に出す可能性が最も高い手を予測してください。そして、その手に勝つための手を考えてください。
         回答は "rock", "paper", "scissors" のいずれか一つだけをJSON形式で返してください。
         例: {"hand": "paper"}`;
@@ -984,7 +985,6 @@
         }
     }
 
-    // ▼▼▼ 変更: モーダル内グラフのスタイルを統一 ▼▼▼
     function renderDetailCharts(log) {
         if (modalResultsChart) modalResultsChart.destroy();
         if (modalHandsChart) modalHandsChart.destroy();
