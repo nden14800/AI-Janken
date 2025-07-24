@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>じゃんけんAI</title>
+    <title>じゃんけんAI (Gemini搭載)</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,6 @@
             --nav-width-collapsed: 60px;
             --nav-width-expanded: 220px;
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #1a1a2e;
@@ -66,47 +65,49 @@
         }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn { 0% { transform: scale(0.7); opacity: 0; } 80% { transform: scale(1.1); } 100% { transform: scale(1.0); opacity: 1; } }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes dash { 0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; } 50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; } 100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; } }
 
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         .app-container { display: flex; }
-        
-        #main-nav {
-            position: fixed; z-index: 100; background-color: var(--nav-bg);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: width 0.3s ease-in-out;
-        }
-        .nav-item {
-            display: flex; align-items: center; padding: 15px; cursor: pointer;
-            position: relative; overflow: hidden; color: var(--nav-icon-color);
-        }
+
+        #main-nav { position: fixed; z-index: 100; background-color: var(--nav-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: width 0.3s ease-in-out; }
+        .nav-item { display: flex; align-items: center; padding: 15px; cursor: pointer; position: relative; overflow: hidden; color: var(--nav-icon-color); }
         .nav-item:hover { background-color: color-mix(in srgb, var(--nav-bg) 90%, var(--primary-color)); }
         .nav-item.active { color: var(--nav-icon-active-color); }
         .nav-item .icon-wrapper { width: 24px; height: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
         .nav-item svg { width: 20px; height: 20px; fill: currentColor; }
         .nav-item-label { margin-left: 20px; white-space: nowrap; animation: fadeIn 0.3s forwards; display: none; }
-        
+
         #main-content { width: 100%; padding: 20px; box-sizing: border-box; animation: fadeIn 0.5s ease-out; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.4s; }
-        
+
         .card { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px var(--card-shadow); animation: fadeIn 0.6s; }
-        #setup-card, #settings-card { max-width: 600px; margin: 20px auto; }
+        #setup-card, #settings-card, #history-card { max-width: 700px; margin: 20px auto; }
         .card h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
         .card .card-description { margin-top: -5px; margin-bottom: 20px; color: var(--secondary-text); }
-        
+
         .content-grid { display: grid; gap: 25px; }
-        
         #game-blocker { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.2); backdrop-filter: blur(4px); z-index: 50; display: flex; justify-content: center; align-items: center; text-align: center; padding: 20px; border-radius: 12px; color: var(--text-color); font-size: 1.2em; font-weight: 500; display: none; }
         #game-blocker.active { display: flex; animation: fadeIn 0.3s; }
         #game-play-card { position: relative; }
-        
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border-color); }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+
+        .settings-item { display: flex; flex-direction: column; align-items: flex-start; padding: 15px 0; border-bottom: 1px solid var(--border-color); gap: 10px; }
+        .settings-item-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;}
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary-color); }
         input:checked + .slider:before { transform: translateX(20px); }
+        
+        .api-key-container { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        .api-key-container input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-color); color: var(--text-color); font-family: 'Roboto', sans-serif; box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;}
+        .api-key-container input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent); outline: none; }
+        .api-key-container .button-group { justify-content: flex-end; }
+        .api-key-status { font-size: 0.8em; color: var(--secondary-text); }
+        .api-key-status.saved { color: #27ae60; }
 
         @media (min-width: 768px) {
             .app-container { padding-left: var(--nav-width-collapsed); transition: padding-left 0.3s ease-in-out; }
@@ -129,7 +130,7 @@
 
         h1 { text-align: center; font-size: 2.5em; font-weight: 700; margin: 0 0 25px 0; }
         .button-group { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        button { font-family: 'Roboto', sans-serif; font-size: 1em; font-weight: 500; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; background-color: var(--primary-color); color: white; }
+        button { font-family: 'Roboto', sans-serif; font-size: 1em; font-weight: 500; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; background-color: var(--primary-color); color: white; transition: background-color 0.2s; }
         button:hover:not(:disabled) { background-color: var(--primary-hover); }
         button:disabled { background-color: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; }
         button.danger { background-color: var(--danger-color); }
@@ -137,41 +138,77 @@
         button.warning { background-color: var(--warning-color); }
         button.warning:hover:not(:disabled) { background-color: var(--warning-hover); }
 
-        .mode-card-option { padding: 20px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; }
+        .mode-card-option { padding: 20px; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: border-color 0.2s, background-color 0.2s; }
         .mode-card-option:hover { border-color: var(--primary-color); background-color: color-mix(in srgb, var(--card-bg) 95%, var(--primary-color)); }
-        
+
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         #round-info { font-size: 1em; color: var(--secondary-text); font-weight: 500; }
-        
+
         #scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center; gap: 15px; margin: 20px 0; }
-        .score-display { display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 8px; font-weight: 500; }
+        .score-display { display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 8px; font-weight: 500; transition: box-shadow 0.3s; }
         .score-display .score-label { font-size: 0.9em; font-weight: 400; color: var(--secondary-text); }
         .score-display.leading { box-shadow: 0 0 15px var(--win-glow); }
         .score-display span { font-size: 1.5em; font-weight: 700; display: block; }
         #draw-score-display { font-size: 0.9em; opacity: 0.7; }
-        
+
         #game-display { display: flex; justify-content: space-around; align-items: center; margin: 25px 0; }
-        .player-area, .ai-area { text-align: center; width: 100px; }
+        .player-area, .ai-area { text-align: center; width: 100px; position: relative; }
         .hand-display { font-size: 3em; min-width: 80px; min-height: 80px; line-height: 80px; display: flex; justify-content: center; align-items: center; }
         .hand-display svg { width: 1em; height: 1em; fill: var(--text-color); }
-        .hand-display.pop-in { animation: popIn 0.4s ease-out forwards; }
+        
+        .loader-container { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; justify-content: center; align-items: center; }
+        .loader { width: 50px; height: 50px; animation: rotate 2s linear infinite; transform-origin: center center; }
+        .loader .path { stroke: var(--primary-color); stroke-linecap: round; animation: dash 1.5s ease-in-out infinite; }
+
         #result-display { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; font-size: 1.3em; font-weight: 700; }
         .result-win { background-color: var(--win-glow); color: #27ae60; }
         .result-lose { background-color: var(--lose-glow); color: var(--danger-color); }
         .result-draw { background-color: var(--draw-glow); color: var(--secondary-text); }
-
         #turn-indicator { min-height: 1.2em; margin-bottom: 15px; font-weight: 500; color: var(--secondary-text); }
         .controls-group { margin-top: 20px; }
-        
-        /* ▼▼▼ 変更点1: グラフコンテナのCSSを調整しました ▼▼▼ */
-        .chart-container {
-            width: 100%;
-            /* JavaScript側で高さを指定するため、ここでのheight/min-height指定は不要です。 */
-            /* これにより、各グラフのサイズが柔軟に設定できます。 */
-        }
-        
+
+        .chart-container { width: 100%; }
         #hands-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center; }
         
+        #history-list { list-style: none; padding: 0; margin: 0; border: 1px solid var(--border-color); border-radius: 8px; }
+        .history-item { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+        .history-item:hover { background-color: color-mix(in srgb, var(--card-bg) 95%, var(--primary-color)); }
+        .history-item:last-child { border-bottom: none; }
+        .history-meta { display: flex; flex-direction: column; gap: 5px; font-size: 0.9em; pointer-events: none; }
+        .history-mode { font-weight: 700; color: var(--primary-color); }
+        .history-date { font-size: 0.9em; color: var(--secondary-text); }
+        .history-result-summary { display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .history-final-score { font-weight: 700; font-size: 1.2em; }
+        .history-score-breakdown { font-size: 0.9em; color: var(--secondary-text); }
+        .history-winner { font-weight: 700; font-size: 1.1em;}
+        .history-winner.win { color: #27ae60; }
+        .history-winner.lose { color: var(--danger-color); }
+        .history-winner.draw { color: var(--secondary-text); }
+        #no-history-message { text-align: center; color: var(--secondary-text); padding: 40px 20px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 12px; max-width: 90%; width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: fadeIn 0.3s; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; flex-shrink: 0; }
+        .modal-title { font-size: 1.4em; font-weight: 700; margin: 0; }
+        
+        /* ▼▼▼ 変更: 閉じるボタンのスタイル ▼▼▼ */
+        .modal-close-button { border: none; background: transparent; color: var(--text-color); cursor: pointer; opacity: 0.7; transition: opacity 0.2s; padding: 5px; display: flex; align-items: center; justify-content: center; }
+        .modal-close-button:hover { opacity: 1; }
+        .modal-close-button svg { width: 20px; height: 20px; }
+
+        .modal-body { overflow-y: auto; }
+        .detail-list { list-style: none; padding: 0; margin: 0; }
+        .detail-item { display: grid; grid-template-columns: auto 1fr auto; gap: 15px; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-round { font-size: 0.9em; color: var(--secondary-text); font-weight: 500; }
+        .detail-hands { display: flex; justify-content: center; align-items: center; gap: 10px; font-size: 1.1em; }
+        .detail-result { font-weight: 700; font-size: 0.9em; padding: 3px 6px; border-radius: 5px; width: 80px; text-align: center; }
+        .detail-result.win { background-color: var(--win-glow); color: #27ae60; }
+        .detail-result.lose { background-color: var(--lose-glow); color: var(--danger-color); }
+        .detail-result.draw { background-color: var(--draw-glow); color: var(--secondary-text); }
+        #modal-charts-container { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+
         #notification-area { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; border-radius: 8px; background-color: color-mix(in srgb, var(--card-bg) 95%, black); color: var(--text-color); box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         #notification-area.show { opacity: 1; pointer-events: auto; }
 
@@ -179,6 +216,8 @@
             #scoreboard { grid-template-columns: 1fr; gap: 5px; }
             .hand-display { font-size: 3em; }
             .player-area, .ai-area { width: 100px; }
+            .history-item { grid-template-columns: 1fr; text-align: center; }
+            .detail-item { text-align: center; }
         }
     </style>
 </head>
@@ -193,16 +232,24 @@
                 <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/></svg></span>
                 <span class="nav-item-label">対戦</span>
             </a>
+            <a class="nav-item" data-tab="history">
+                <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock-history" viewBox="0 0 16 16">
+                    <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z"/>
+                    <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z"/>
+                    <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5"/>
+                  </svg></span>
+                <span class="nav-item-label">履歴</span>
+            </a>
             <a class="nav-item" data-tab="settings">
                 <span class="icon-wrapper"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
-<path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
-</svg></span>
+                    <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                </svg></span>
                 <span class="nav-item-label">設定</span>
             </a>
         </nav>
         <main id="main-content">
             <header>
-                <h1>じゃんけんAI</h1>
+                 <h1>じゃんけんAI <span style="font-size: 0.5em; color: var(--primary-color);">with Gemini</span></h1>
             </header>
 
             <section id="setup-section" class="tab-content active">
@@ -210,8 +257,8 @@
                     <div id="mode-selection-container">
                         <h2>1. モード選択</h2>
                         <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div class="mode-card-option" data-mode="player-vs-ai"><h3>あなた VS AI</h3><p>AIの次の手を予測して勝利を目指せ！</p></div>
-                            <div class="mode-card-option" data-mode="ai-vs-ai"><h3>AI VS AI</h3><p>AI同士の高速対戦を観戦しよう。</p></div>
+                            <div class="mode-card-option" data-mode="player-vs-ai"><h3>あなた VS AI (Gemini)</h3><p>AIの次の手を予測して勝利を目指せ！</p></div>
+                            <div class="mode-card-option" data-mode="ai-vs-ai"><h3>AI(Gemini) VS AI(Gemini)</h3><p>AI同士の高速対戦を観戦しよう。</p></div>
                             <div class="mode-card-option" data-mode="player-vs-player"><h3>あなた VS ユーザー2</h3><p>友達や家族と対戦しよう。</p></div>
                         </div>
                     </div>
@@ -245,7 +292,15 @@
                             <div id="game-display">
                                 <div class="player-area"> <div id="player-name" class="name">あなた</div> <div id="player-hand" class="hand-display">?</div> </div>
                                 <div style="font-size: 1.8em; font-weight: bold; color: var(--secondary-text);">VS</div>
-                                <div class="ai-area"> <div id="ai-name" class="name">AI</div> <div id="ai-hand" class="hand-display">?</div> </div>
+                                <div class="ai-area">
+                                    <div id="ai-name" class="name">AI</div>
+                                    <div id="ai-hand" class="hand-display">?</div>
+                                    <div id="ai-loader" class="loader-container">
+                                        <svg class="loader" viewBox="0 0 50 50">
+                                            <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
                             <div id="result-display">結果を待っています...</div>
                             <div id="player-controls">
@@ -260,8 +315,8 @@
                             <div id="ai-vs-ai-controls">
                                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
                                    <label for="ai-speed-slider">対戦速度:</label>
-                                   <input type="range" id="ai-speed-slider" min="1" max="200" value="10" style="flex-grow: 1; max-width: 200px;">
-                                   <span id="ai-speed-display" style="font-weight: 700; min-width: 30px;">10</span>回/秒
+                                   <input type="range" id="ai-speed-slider" min="1" max="10" value="2" style="flex-grow: 1; max-width: 200px;">
+                                   <span id="ai-speed-display" style="font-weight: 700; min-width: 30px;">2</span>回/秒
                                 </div>
                                 <div class="controls-group button-group">
                                     <button id="ai-vs-ai-start-stop">スタート</button>
@@ -288,371 +343,760 @@
                 </div>
             </section>
             
+            <section id="history-section" class="tab-content">
+                <div id="history-card" class="card">
+                    <div class="history-header">
+                       <h2>対戦履歴 (最大100件)</h2>
+                       <button id="clear-history-button" class="danger">履歴をクリア</button>
+                    </div>
+                    <ul id="history-list"></ul>
+                    <p id="no-history-message">まだ対戦履歴がありません。</p>
+                </div>
+            </section>
+
             <section id="settings-section" class="tab-content">
                  <div id="settings-card" class="card">
                     <h2>設定</h2>
                     <div class="settings-item">
-                        <label for="popups-enabled-switch">手のポップアップアニメーション</label>
-                        <label class="switch"><input type="checkbox" id="popups-enabled-switch" checked><span class="slider"></span></label>
+                        <div class="settings-item-header">
+                           <label for="api-key-input">Gemini APIキー</label>
+                           <span id="api-key-status"></span>
+                        </div>
+                        <p class="card-description" style="margin-bottom: 5px; font-size: 0.9em;">AI(Gemini)と対戦するためにAPIキーが必要です。キーはブラウザ内にのみ保存されます。</p>
+                         <div class="api-key-container">
+                             <input type="password" id="api-key-input" placeholder="APIキーを入力...">
+                             <div class="button-group">
+                                <button id="save-api-key-button">保存</button>
+                             </div>
+                         </div>
+                    </div>
+
+                    <div class="settings-item">
+                        <div class="settings-item-header">
+                            <label for="popups-enabled-switch">手のポップアップアニメーション</label>
+                            <label class="switch"><input type="checkbox" id="popups-enabled-switch" checked><span class="slider"></span></label>
+                        </div>
                     </div>
                      <div class="settings-item">
-                        <label for="data-analysis-enabled-switch">データ分析パネルの表示</label>
-                        <label class="switch"><input type="checkbox" id="data-analysis-enabled-switch" checked><span class="slider"></span></label>
+                        <div class="settings-item-header">
+                            <label for="data-analysis-enabled-switch">データ分析パネルの表示</label>
+                            <label class="switch"><input type="checkbox" id="data-analysis-enabled-switch" checked><span class="slider"></span></label>
+                        </div>
                     </div>
                  </div>
             </section>
         </main>
     </div>
-    
+
     <div id="notification-area"><p id="notification-message">メッセージ</p></div>
 
-    <script>
-        const HANDS = ['rock', 'paper', 'scissors'];
-        const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
-        const WIN_CONDITIONS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
-        const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
-        
-        let gameState = {};
-        let resultsChart = null, handsChart = null;
-        let aiVsAiIntervalId = null, roundResetTimeoutId = null, notificationTimeoutId = null;
-        
-        const DOMElements = {
-            navItems: document.querySelectorAll('.nav-item'),
-            tabContents: document.querySelectorAll('.tab-content'),
-            gameContentGrid: document.getElementById('game-content-grid'),
-            modeSelectionContainer: document.getElementById('mode-selection-container'),
-            gameLengthContainer: document.getElementById('game-length-container'),
-            modeCards: document.querySelectorAll('.mode-card-option'),
-            gameLengthButtons: document.getElementById('game-length-buttons'),
-            dataPanel: document.querySelector('.data-panel'),
-            chartsCard: document.getElementById('charts-card'),
-            gameBlocker: document.getElementById('game-blocker'),
-            goToSetupBtn: document.getElementById('go-to-setup-btn'),
-            roundInfo: document.getElementById('round-info'),
-            playerScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(1) .score-label'),
-            aiScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(3) .score-label'),
-            playerScoreSpan: document.getElementById('player-score-span'),
-            aiScoreSpan: document.getElementById('ai-score-span'),
-            drawScoreSpan: document.getElementById('draw-score-span'),
-            playerName: document.getElementById('player-name'), aiName: document.getElementById('ai-name'),
-            playerHand: document.getElementById('player-hand'), aiHand: document.getElementById('ai-hand'),
-            resultDisplay: document.getElementById('result-display'),
-            turnIndicator: document.getElementById('turn-indicator'),
-            playerControls: document.getElementById('player-controls'),
-            playerChoiceButtons: document.querySelectorAll('#player-controls button[data-hand]'),
-            startPauseButton: document.getElementById('start-pause-button'),
-            quitButton: document.getElementById('quit-button'),
-            newGameButton: document.getElementById('new-game-button'),
-            aiVsAiControls: document.getElementById('ai-vs-ai-controls'),
-            aiSpeedSlider: document.getElementById('ai-speed-slider'),
-            aiSpeedDisplay: document.getElementById('ai-speed-display'),
-            aiStartStopButton: document.getElementById('ai-vs-ai-start-stop'),
-            aiQuitButton: document.getElementById('ai-quit-button'),
-            aiNewGameButton: document.getElementById('ai-new-game-button'),
-            p1HandsTitle: document.getElementById('player1-hands-title'), p2HandsTitle: document.getElementById('player2-hands-title'),
-            p1Rock: document.getElementById('p1-rock-count'), p1Paper: document.getElementById('p1-paper-count'), p1Scissors: document.getElementById('p1-scissors-count'),
-            p2Rock: document.getElementById('p2-rock-count'), p2Paper: document.getElementById('p2-paper-count'), p2Scissors: document.getElementById('p2-scissors-count'),
-            popupsEnabledSwitch: document.getElementById('popups-enabled-switch'),
-            dataAnalysisEnabledSwitch: document.getElementById('data-analysis-enabled-switch'),
-            notificationArea: document.getElementById('notification-area'),
-            notificationMessage: document.getElementById('notification-message'),
-        };
+    <div id="history-detail-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title">対戦詳細</h3>
+                <!-- ▼▼▼ 変更: 閉じるボタンのアイコン ▼▼▼ -->
+                <button id="modal-close-button" class="modal-close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul id="modal-detail-list" class="detail-list"></ul>
+                <div id="modal-charts-container">
+                    <div id="modal-results-chart" class="chart-container"></div>
+                    <div id="modal-hands-chart" class="chart-container" style="margin-top: 25px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function initializeEventListeners() {
-            DOMElements.navItems.forEach(item => item.addEventListener('click', () => showTab(item.dataset.tab)));
-            DOMElements.modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
-            DOMElements.gameLengthButtons.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') setGameLength(e.target.dataset.length === 'Infinity' ? Infinity : parseInt(e.target.dataset.length));
-            });
-            DOMElements.goToSetupBtn.addEventListener('click', () => showTab('setup'));
-            DOMElements.playerChoiceButtons.forEach(button => button.addEventListener('click', () => playerChoose(button.dataset.hand)));
-            [DOMElements.startPauseButton, DOMElements.aiStartStopButton].forEach(btn => btn.addEventListener('click', togglePause));
-            [DOMElements.quitButton, DOMElements.aiQuitButton].forEach(btn => btn.addEventListener('click', quitGame));
-            [DOMElements.newGameButton, DOMElements.aiNewGameButton].forEach(btn => btn.addEventListener('click', () => { resetGame(); showTab('setup'); }));
-            DOMElements.aiSpeedSlider.addEventListener('input', (e) => updateSpeedDisplay(e.target.value));
-            DOMElements.popupsEnabledSwitch.addEventListener('change', (e) => gameState.settings.popupsEnabled = e.target.checked);
-            DOMElements.dataAnalysisEnabledSwitch.addEventListener('change', (e) => {
-                gameState.settings.dataAnalysisEnabled = e.target.checked;
-                DOMElements.dataPanel.style.display = e.target.checked ? 'flex' : 'none';
-                DOMElements.gameContentGrid.classList.toggle('show-data-panel', e.target.checked);
-                if(e.target.checked && (!resultsChart || !handsChart)) initializeCharts();
-            });
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateAllChartsTheme);
-        }
 
-        function showTab(tabId) {
-            if (tabId === 'game' && !gameState.setupComplete) DOMElements.gameBlocker.classList.add('active');
-            else DOMElements.gameBlocker.classList.remove('active');
-            DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
-            DOMElements.tabContents.forEach(content => content.classList.toggle('active', content.id === `${tabId}-section`));
-        }
+<script>
+    const HANDS = ['rock', 'paper', 'scissors'];
+    const HAND_EMOJIS = { rock: '✊', paper: '✋', scissors: '✌️' };
+    const WIN_CONDITIONS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+    const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
 
-        function selectMode(mode) {
-            gameState.mode = mode;
-            let p1Name = 'あなた', p2Name = 'AI';
-            if (mode === 'ai-vs-ai') { p1Name = 'AI 1'; p2Name = 'AI 2'; }
-            else if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
-            [DOMElements.playerName, DOMElements.p1HandsTitle, DOMElements.playerScoreLabel].forEach(el => el.textContent = p1Name);
-            [DOMElements.aiName, DOMElements.p2HandsTitle, DOMElements.aiScoreLabel].forEach(el => el.textContent = p2Name);
-            DOMElements.modeSelectionContainer.style.display = 'none';
-            DOMElements.gameLengthContainer.style.display = 'block';
-            DOMElements.gameLengthContainer.style.animation = 'fadeIn 0.6s';
-        }
+    let gameState = {};
+    let resultsChart = null, handsChart = null;
+    let modalResultsChart = null, modalHandsChart = null;
+    let aiVsAiIntervalId = null, roundResetTimeoutId = null, notificationTimeoutId = null;
 
-        function setGameLength(length) {
-            resetGame(length);
-            gameState.setupComplete = true;
-            if (gameState.mode === 'player-vs-ai' || gameState.mode === 'player-vs-player') {
-                DOMElements.playerControls.style.display = 'block';
-                DOMElements.aiVsAiControls.style.display = 'none';
-            } else {
-                DOMElements.playerControls.style.display = 'none';
-                DOMElements.aiVsAiControls.style.display = 'block';
+    const DOMElements = {
+        navItems: document.querySelectorAll('.nav-item'),
+        tabContents: document.querySelectorAll('.tab-content'),
+        gameContentGrid: document.getElementById('game-content-grid'),
+        modeSelectionContainer: document.getElementById('mode-selection-container'),
+        gameLengthContainer: document.getElementById('game-length-container'),
+        modeCards: document.querySelectorAll('.mode-card-option'),
+        gameLengthButtons: document.getElementById('game-length-buttons'),
+        dataPanel: document.querySelector('.data-panel'),
+        chartsCard: document.getElementById('charts-card'),
+        gameBlocker: document.getElementById('game-blocker'),
+        goToSetupBtn: document.getElementById('go-to-setup-btn'),
+        roundInfo: document.getElementById('round-info'),
+        playerScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(1) .score-label'),
+        aiScoreLabel: document.querySelector('#scoreboard .score-display:nth-child(3) .score-label'),
+        playerScoreSpan: document.getElementById('player-score-span'),
+        aiScoreSpan: document.getElementById('ai-score-span'),
+        drawScoreSpan: document.getElementById('draw-score-span'),
+        playerName: document.getElementById('player-name'), aiName: document.getElementById('ai-name'),
+        playerHand: document.getElementById('player-hand'), aiHand: document.getElementById('ai-hand'),
+        aiLoader: document.getElementById('ai-loader'),
+        resultDisplay: document.getElementById('result-display'),
+        turnIndicator: document.getElementById('turn-indicator'),
+        playerControls: document.getElementById('player-controls'),
+        playerChoiceButtons: document.querySelectorAll('#player-controls button[data-hand]'),
+        startPauseButton: document.getElementById('start-pause-button'),
+        quitButton: document.getElementById('quit-button'),
+        newGameButton: document.getElementById('new-game-button'),
+        aiVsAiControls: document.getElementById('ai-vs-ai-controls'),
+        aiSpeedSlider: document.getElementById('ai-speed-slider'),
+        aiSpeedDisplay: document.getElementById('ai-speed-display'),
+        aiStartStopButton: document.getElementById('ai-vs-ai-start-stop'),
+        aiQuitButton: document.getElementById('ai-quit-button'),
+        aiNewGameButton: document.getElementById('ai-new-game-button'),
+        p1HandsTitle: document.getElementById('player1-hands-title'), p2HandsTitle: document.getElementById('player2-hands-title'),
+        p1Rock: document.getElementById('p1-rock-count'), p1Paper: document.getElementById('p1-paper-count'), p1Scissors: document.getElementById('p1-scissors-count'),
+        p2Rock: document.getElementById('p2-rock-count'), p2Paper: document.getElementById('p2-paper-count'), p2Scissors: document.getElementById('p2-scissors-count'),
+        popupsEnabledSwitch: document.getElementById('popups-enabled-switch'),
+        dataAnalysisEnabledSwitch: document.getElementById('data-analysis-enabled-switch'),
+        apiKeyInput: document.getElementById('api-key-input'),
+        saveApiKeyButton: document.getElementById('save-api-key-button'),
+        apiKeyStatus: document.getElementById('api-key-status'),
+        historyList: document.getElementById('history-list'),
+        noHistoryMessage: document.getElementById('no-history-message'),
+        clearHistoryButton: document.getElementById('clear-history-button'),
+        notificationArea: document.getElementById('notification-area'),
+        notificationMessage: document.getElementById('notification-message'),
+        historyDetailModal: document.getElementById('history-detail-modal'),
+        modalTitle: document.getElementById('modal-title'),
+        modalDetailList: document.getElementById('modal-detail-list'),
+        modalCloseButton: document.getElementById('modal-close-button'),
+    };
+
+    function initializeEventListeners() {
+        DOMElements.navItems.forEach(item => item.addEventListener('click', () => showTab(item.dataset.tab)));
+        DOMElements.modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
+        DOMElements.gameLengthButtons.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') setGameLength(e.target.dataset.length === 'Infinity' ? Infinity : parseInt(e.target.dataset.length));
+        });
+        DOMElements.goToSetupBtn.addEventListener('click', () => showTab('setup'));
+        DOMElements.playerChoiceButtons.forEach(button => button.addEventListener('click', () => playerChoose(button.dataset.hand)));
+        [DOMElements.startPauseButton, DOMElements.aiStartStopButton].forEach(btn => btn.addEventListener('click', togglePause));
+        [DOMElements.quitButton, DOMElements.aiQuitButton].forEach(btn => btn.addEventListener('click', quitGame));
+        [DOMElements.newGameButton, DOMElements.aiNewGameButton].forEach(btn => btn.addEventListener('click', () => { resetGame(); showTab('setup'); }));
+        DOMElements.aiSpeedSlider.addEventListener('input', (e) => updateSpeedDisplay(e.target.value));
+        DOMElements.popupsEnabledSwitch.addEventListener('change', (e) => { gameState.settings.popupsEnabled = e.target.checked; saveSettings(); });
+        DOMElements.dataAnalysisEnabledSwitch.addEventListener('change', (e) => {
+            gameState.settings.dataAnalysisEnabled = e.target.checked;
+            DOMElements.dataPanel.style.display = e.target.checked ? 'flex' : 'none';
+            DOMElements.gameContentGrid.classList.toggle('show-data-panel', e.target.checked);
+            if(e.target.checked && (!resultsChart || !handsChart)) initializeCharts();
+            saveSettings();
+        });
+        DOMElements.saveApiKeyButton.addEventListener('click', saveApiKey);
+        DOMElements.clearHistoryButton.addEventListener('click', clearHistory);
+        DOMElements.modalCloseButton.addEventListener('click', hideHistoryDetail);
+        DOMElements.historyDetailModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.historyDetailModal) {
+                hideHistoryDetail();
             }
-            if (gameState.settings.dataAnalysisEnabled) initializeCharts();
-            updateUI();
-            showTab('game');
+        });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            updateAllChartsTheme();
+            if(DOMElements.historyDetailModal.style.display === 'flex') {
+                const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (modalResultsChart) modalResultsChart.updateOptions(opts);
+                if (modalHandsChart) modalHandsChart.updateOptions(opts);
+            }
+        });
+    }
+
+    function showTab(tabId) {
+        if (tabId === 'game' && !gameState.setupComplete) {
+            DOMElements.gameBlocker.classList.add('active');
+        } else {
+            DOMElements.gameBlocker.classList.remove('active');
+        }
+        DOMElements.navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
+        DOMElements.tabContents.forEach(content => content.classList.toggle('active', content.id === `${tabId}-section`));
+    }
+
+    function selectMode(mode) {
+        if ((mode === 'player-vs-ai' || mode === 'ai-vs-ai') && !gameState.settings.apiKey) {
+            showNotification('先に設定画面でGemini APIキーを設定してください。', 4000);
+            showTab('settings');
+            return;
+        }
+        gameState.mode = mode;
+        let p1Name = 'あなた', p2Name = 'AI';
+        if (mode === 'ai-vs-ai') { p1Name = 'AI 1'; p2Name = 'AI 2'; }
+        else if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
+        [DOMElements.playerName, DOMElements.p1HandsTitle, DOMElements.playerScoreLabel].forEach(el => el.textContent = p1Name);
+        [DOMElements.aiName, DOMElements.p2HandsTitle, DOMElements.aiScoreLabel].forEach(el => el.textContent = p2Name);
+        DOMElements.modeSelectionContainer.style.display = 'none';
+        DOMElements.gameLengthContainer.style.display = 'block';
+        DOMElements.gameLengthContainer.style.animation = 'fadeIn 0.6s';
+    }
+
+    function setGameLength(length) {
+        resetGame(length);
+        gameState.setupComplete = true;
+        if (gameState.mode === 'player-vs-ai' || gameState.mode === 'player-vs-player') {
+            DOMElements.playerControls.style.display = 'block';
+            DOMElements.aiVsAiControls.style.display = 'none';
+        } else {
+            DOMElements.playerControls.style.display = 'none';
+            DOMElements.aiVsAiControls.style.display = 'block';
+        }
+        if (gameState.settings.dataAnalysisEnabled) initializeCharts();
+        updateUI();
+        showTab('game');
+    }
+
+    async function playerChoose(hand) {
+        if (gameState.isPaused || gameState.isOver || !DOMElements.playerChoiceButtons[0].disabled === false) return;
+        DOMElements.playerChoiceButtons.forEach(b => b.disabled = true);
+        clearTimeout(roundResetTimeoutId);
+
+        if (gameState.mode === 'player-vs-ai') {
+            toggleAiLoader(true);
+            const aiHand = await getGeminiHand(gameState.history.p1, DOMElements.aiName.textContent);
+            toggleAiLoader(false);
+
+            if (aiHand) {
+                playRound(hand, aiHand);
+            }
+        } else if (gameState.mode === 'player-vs-player') {
+            if (gameState.currentPlayer === 'p1') {
+                gameState.p1TurnChoice = hand;
+                gameState.currentPlayer = 'p2';
+                DOMElements.playerHand.innerHTML = CHECK_SVG;
+                DOMElements.aiHand.textContent = '?';
+            } else {
+                playRound(gameState.p1TurnChoice, hand);
+            }
+        }
+        updateUI();
+        if(gameState.mode !== 'player-vs-player') DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
+    }
+
+    function quitGame() {
+        gameState.isOver = true;
+        gameState.isPaused = true;
+        if (gameState.mode === 'ai-vs-ai') stopAiVsAi();
+        logCompletedGame();
+        updateUI();
+    }
+
+    function togglePause() {
+        if (gameState.isOver) return;
+        gameState.isPaused = !gameState.isPaused;
+        clearTimeout(roundResetTimeoutId);
+        if (gameState.mode === 'ai-vs-ai') gameState.isPaused ? stopAiVsAi() : startAiVsAi();
+        else setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
+        updateUI();
+    }
+
+    function playRound(hand1, hand2) {
+        if (gameState.isOver) return;
+        gameState.currentRound++;
+        gameState.handsCount.p1[hand1]++;
+        gameState.handsCount.p2[hand2]++;
+        gameState.history.p1.push(hand1);
+        gameState.history.p2.push(hand2);
+
+        const winner = determineWinner(hand1, hand2);
+        let resultMessage = '', resultClass = '';
+        if (winner === 'p1') { gameState.scores.p1++; resultMessage = `${DOMElements.playerName.textContent} の勝ち！`; resultClass = 'win'; }
+        else if (winner === 'p2') { gameState.scores.p2++; resultMessage = `${DOMElements.aiName.textContent} の勝ち！`; resultClass = 'lose'; }
+        else { gameState.scores.draw++; resultMessage = 'あいこ！'; resultClass = 'draw'; }
+
+        gameState.history.p1_scores.push(gameState.scores.p1);
+        gameState.history.p2_scores.push(gameState.scores.p2);
+        gameState.history.draw_scores.push(gameState.scores.draw);
+        gameState.history.rounds.push(gameState.currentRound);
+        updateHandDisplays(hand1, hand2);
+        setResultMessage(resultMessage, resultClass);
+        if (gameState.settings.dataAnalysisEnabled) updateAllCharts();
+        updateUI();
+        checkGameEnd();
+        if (!gameState.isOver && !gameState.isPaused) {
+            const delay = (gameState.mode === 'ai-vs-ai') ? Math.max(50, 1000 / DOMElements.aiSpeedSlider.value) : 2000;
+            roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
+        }
+    }
+
+    function determineWinner(hand1, hand2) { if (hand1 === hand2) return 'draw'; return WIN_CONDITIONS[hand1] === hand2 ? 'p1' : 'p2'; }
+    
+    async function getGeminiHand(opponentHistory, myName = 'AI') {
+        const apiKey = gameState.settings.apiKey;
+        if (!apiKey) {
+            showNotification('Gemini APIキーが設定されていません。', 4000);
+            showTab('settings');
+            return null;
         }
 
-        function quitGame() {
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const historyText = opponentHistory.slice(-10).join(', ') || 'まだありません';
+
+        const prompt = `あなたは「${myName}」という名前のじゃんけんの達人です。対戦相手の過去10回の手の履歴は次の通りです: [${historyText}]。
+        この履歴を分析し、相手が次に出す可能性が最も高い手を予測してください。そして、その手に勝つための手を考えてください。
+        回答は "rock", "paper", "scissors" のいずれか一つだけをJSON形式で返してください。
+        例: {"hand": "paper"}`;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        temperature: 1.0,
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Gemini API Error:', errorData);
+                showNotification(`APIエラー: ${errorData.error.message}`, 5000);
+                return HANDS[Math.floor(Math.random() * 3)];
+            }
+
+            const data = await response.json();
+            const aiHandText = data.candidates[0].content.parts[0].text.trim();
+            const parsedHand = JSON.parse(aiHandText).hand;
+
+            if (HANDS.includes(parsedHand)) {
+                return parsedHand;
+            } else {
+                return HANDS[Math.floor(Math.random() * 3)];
+            }
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            showNotification('AIとの通信に失敗しました。', 4000);
+            return HANDS[Math.floor(Math.random() * 3)];
+        }
+    }
+
+    function checkGameEnd() {
+        if (gameState.gameLength !== Infinity && gameState.currentRound >= gameState.gameLength) {
             gameState.isOver = true;
             gameState.isPaused = true;
-            if (gameState.mode === 'ai-vs-ai') stopAiVsAi();
-            updateUI();
+            let finalMessage = '勝負終了！ ';
+            if (gameState.scores.p1 > gameState.scores.p2) finalMessage += `${DOMElements.playerName.textContent} の完全勝利！`;
+            else if (gameState.scores.p2 > gameState.scores.p1) finalMessage += `${DOMElements.aiName.textContent} の完全勝利！`;
+            else finalMessage += '引き分けです！';
+            setResultMessage(finalMessage, 'draw');
+            showNotification(finalMessage, 3000);
+            logCompletedGame();
         }
+        updateUI();
+    }
 
-        function togglePause() {
-            if (gameState.isOver) return;
-            gameState.isPaused = !gameState.isPaused;
-            clearTimeout(roundResetTimeoutId);
-            if (gameState.mode === 'ai-vs-ai') gameState.isPaused ? stopAiVsAi() : startAiVsAi();
-            else setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
-            updateUI();
-        }
-
-        function playerChoose(hand) {
-            if (gameState.isPaused || gameState.isOver) return;
-            clearTimeout(roundResetTimeoutId);
-            if (gameState.mode === 'player-vs-ai') {
-                playRound(hand, getAiHand(gameState.history.p1));
-                gameState.history.p1.push(hand);
-            } else if (gameState.mode === 'player-vs-player') {
-                if (gameState.currentPlayer === 'p1') {
-                    gameState.p1TurnChoice = hand;
-                    gameState.currentPlayer = 'p2';
-                    DOMElements.playerHand.innerHTML = CHECK_SVG;
-                    DOMElements.aiHand.textContent = '?';
-                } else {
-                    playRound(gameState.p1TurnChoice, hand);
-                    gameState.p1TurnChoice = null;
-                    gameState.currentPlayer = 'p1';
-                }
-            }
-            updateUI();
-        }
-
-        function playRound(hand1, hand2) {
-            if (gameState.isOver) return;
-            gameState.currentRound++;
-            gameState.handsCount.p1[hand1]++;
-            gameState.handsCount.p2[hand2]++;
-            const winner = determineWinner(hand1, hand2);
-            let resultMessage = '', resultClass = '';
-            if (winner === 'p1') { gameState.scores.p1++; resultMessage = `${DOMElements.playerName.textContent} の勝ち！`; resultClass = 'win'; }
-            else if (winner === 'p2') { gameState.scores.p2++; resultMessage = `${DOMElements.aiName.textContent} の勝ち！`; resultClass = 'lose'; }
-            else { gameState.scores.draw++; resultMessage = 'あいこ！'; resultClass = 'draw'; }
-            gameState.history.p1_scores.push(gameState.scores.p1);
-            gameState.history.p2_scores.push(gameState.scores.p2);
-            gameState.history.draw_scores.push(gameState.scores.draw);
-            gameState.history.rounds.push(gameState.currentRound);
-            updateHandDisplays(hand1, hand2);
-            setResultMessage(resultMessage, resultClass);
-            if (gameState.settings.dataAnalysisEnabled) updateAllCharts();
-            updateUI();
-            checkGameEnd();
-            if (!gameState.isOver && !gameState.isPaused) {
-                const delay = (gameState.mode === 'ai-vs-ai') ? Math.max(50, 1000 / DOMElements.aiSpeedSlider.value) : 2000;
-                roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
-            }
-        }
+    function startAiVsAi() { DOMElements.aiSpeedSlider.disabled = true; aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / DOMElements.aiSpeedSlider.value); }
+    function stopAiVsAi() { DOMElements.aiSpeedSlider.disabled = false; clearInterval(aiVsAiIntervalId); toggleAiLoader(false); }
+    
+    async function runAiVsAiRound() {
+        if (gameState.isPaused || gameState.isOver) { stopAiVsAi(); return; }
         
-        function determineWinner(hand1, hand2) { if (hand1 === hand2) return 'draw'; return WIN_CONDITIONS[hand1] === hand2 ? 'p1' : 'p2'; }
-        function getAiHand(history) { if (Math.random() < 0.2 || history.length < 5) return HANDS[Math.floor(Math.random() * 3)]; const winningMove = Object.keys(WIN_CONDITIONS).find(key => WIN_CONDITIONS[key] === history[history.length - 1]); return winningMove || HANDS[Math.floor(Math.random() * 3)]; }
+        toggleAiLoader(true);
+        const [hand1, hand2] = await Promise.all([
+            getGeminiHand(gameState.history.p2, 'AI 1'),
+            getGeminiHand(gameState.history.p1, 'AI 2')
+        ]);
+        toggleAiLoader(false);
 
-        function checkGameEnd() {
-            if (gameState.gameLength !== Infinity && gameState.currentRound >= gameState.gameLength) {
-                gameState.isOver = true;
-                gameState.isPaused = true;
-                let finalMessage = '勝負終了！ ';
-                if (gameState.scores.p1 > gameState.scores.p2) finalMessage += `${DOMElements.playerName.textContent} の完全勝利！`;
-                else if (gameState.scores.p2 > gameState.scores.p1) finalMessage += `${DOMElements.aiName.textContent} の完全勝利！`;
-                else finalMessage += '引き分けです！';
-                setResultMessage(finalMessage, 'draw');
-                showNotification(finalMessage, 3000);
-            }
-            updateUI();
+        if (hand1 && hand2) {
+            playRound(hand1, hand2);
+        } else {
+            stopAiVsAi();
+            setResultMessage('APIエラーのため対戦を中断しました。', 'lose');
         }
+    }
 
-        function startAiVsAi() { DOMElements.aiSpeedSlider.disabled = true; aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / DOMElements.aiSpeedSlider.value); }
-        function stopAiVsAi() { DOMElements.aiSpeedSlider.disabled = false; clearInterval(aiVsAiIntervalId); }
-        function runAiVsAiRound() { if (gameState.isPaused || gameState.isOver) { stopAiVsAi(); return; } const hand1 = getAiHand(gameState.history.p2), hand2 = getAiHand(gameState.history.p1); gameState.history.p1.push(hand1); gameState.history.p2.push(hand2); if (gameState.history.p1.length > 200) gameState.history.p1.shift(); if (gameState.history.p2.length > 200) gameState.history.p2.shift(); playRound(hand1, hand2); }
-        function updateSpeedDisplay(value) { DOMElements.aiSpeedDisplay.textContent = value; if (!gameState.isPaused) { stopAiVsAi(); startAiVsAi(); } }
+    function updateSpeedDisplay(value) { DOMElements.aiSpeedDisplay.textContent = value; if (!gameState.isPaused) { stopAiVsAi(); startAiVsAi(); } }
+
+    function updateUI() {
+        const lengthDisplay = gameState.gameLength === Infinity ? '∞' : gameState.gameLength;
+        DOMElements.roundInfo.textContent = `Round: ${gameState.currentRound} / ${lengthDisplay}`;
+        DOMElements.playerScoreSpan.textContent = gameState.scores.p1;
+        DOMElements.aiScoreSpan.textContent = gameState.scores.p2;
+        DOMElements.drawScoreSpan.textContent = gameState.scores.draw;
+        const p1ScoreEl = DOMElements.playerScoreSpan.parentElement;
+        const p2ScoreEl = DOMElements.aiScoreSpan.parentElement;
+        p1ScoreEl.classList.toggle('leading', gameState.scores.p1 > gameState.scores.p2);
+        p2ScoreEl.classList.toggle('leading', gameState.scores.p2 > gameState.scores.p1);
+        DOMElements.p1Rock.textContent = gameState.handsCount.p1.rock;
+        DOMElements.p1Paper.textContent = gameState.handsCount.p1.paper;
+        DOMElements.p1Scissors.textContent = gameState.handsCount.p1.scissors;
+        DOMElements.p2Rock.textContent = gameState.handsCount.p2.rock;
+        DOMElements.p2Paper.textContent = gameState.handsCount.p2.paper;
+        DOMElements.p2Scissors.textContent = gameState.handsCount.p2.scissors;
         
-        function updateUI() {
-            const lengthDisplay = gameState.gameLength === Infinity ? '∞' : gameState.gameLength;
-            DOMElements.roundInfo.textContent = `Round: ${gameState.currentRound} / ${lengthDisplay}`;
-            DOMElements.playerScoreSpan.textContent = gameState.scores.p1;
-            DOMElements.aiScoreSpan.textContent = gameState.scores.p2;
-            DOMElements.drawScoreSpan.textContent = gameState.scores.draw;
-            const p1ScoreEl = DOMElements.playerScoreSpan.parentElement;
-            const p2ScoreEl = DOMElements.aiScoreSpan.parentElement;
-            p1ScoreEl.classList.toggle('leading', gameState.scores.p1 > gameState.scores.p2);
-            p2ScoreEl.classList.toggle('leading', gameState.scores.p2 > gameState.scores.p1);
-            DOMElements.p1Rock.textContent = gameState.handsCount.p1.rock;
-            DOMElements.p1Paper.textContent = gameState.handsCount.p1.paper;
-            DOMElements.p1Scissors.textContent = gameState.handsCount.p1.scissors;
-            DOMElements.p2Rock.textContent = gameState.handsCount.p2.rock;
-            DOMElements.p2Paper.textContent = gameState.handsCount.p2.paper;
-            DOMElements.p2Scissors.textContent = gameState.handsCount.p2.scissors;
-            
-            const isPlayerTurn = !gameState.isPaused && !gameState.isOver;
-            DOMElements.playerChoiceButtons.forEach(b => b.disabled = !isPlayerTurn);
-            
-            const startBtn = DOMElements.startPauseButton, aiStartBtn = DOMElements.aiStartStopButton;
-            const quitBtn = DOMElements.quitButton, aiQuitBtn = DOMElements.aiQuitButton;
-            const newGameBtn = DOMElements.newGameButton, aiNewGameBtn = DOMElements.aiNewGameButton;
-            
-            [startBtn, aiStartBtn, quitBtn, aiQuitBtn, newGameBtn, aiNewGameBtn].forEach(b => b.style.display = 'none');
+        const isPlayerTurn = !gameState.isPaused && !gameState.isOver;
+        DOMElements.playerChoiceButtons.forEach(b => b.disabled = !isPlayerTurn);
+        
+        const startBtn = DOMElements.startPauseButton, aiStartBtn = DOMElements.aiStartStopButton;
+        const quitBtn = DOMElements.quitButton, aiQuitBtn = DOMElements.aiQuitButton;
+        const newGameBtn = DOMElements.newGameButton, aiNewGameBtn = DOMElements.aiNewGameButton;
+        
+        [startBtn, aiStartBtn, quitBtn, aiQuitBtn, newGameBtn, aiNewGameBtn].forEach(b => b.style.display = 'none');
 
-            const currentStartBtn = gameState.mode === 'ai-vs-ai' ? aiStartBtn : startBtn;
-            const currentQuitBtn = gameState.mode === 'ai-vs-ai' ? aiQuitBtn : quitBtn;
-            const currentNewGameBtn = gameState.mode === 'ai-vs-ai' ? aiNewGameBtn : newGameBtn;
+        const currentStartBtn = gameState.mode === 'ai-vs-ai' ? aiStartBtn : startBtn;
+        const currentQuitBtn = gameState.mode === 'ai-vs-ai' ? aiQuitBtn : quitBtn;
+        const currentNewGameBtn = gameState.mode === 'ai-vs-ai' ? aiNewGameBtn : newGameBtn;
 
-            if (gameState.isOver) {
-                currentNewGameBtn.style.display = 'inline-block';
+        if (gameState.isOver) {
+            currentNewGameBtn.style.display = 'inline-block';
+        } else {
+            currentStartBtn.style.display = 'inline-block';
+            if (!gameState.isPaused) currentQuitBtn.style.display = 'inline-block';
+            
+            if (gameState.isPaused) {
+                currentStartBtn.textContent = 'スタート';
+                currentStartBtn.classList.remove('warning');
             } else {
-                currentStartBtn.style.display = 'inline-block';
-                if (!gameState.isPaused) currentQuitBtn.style.display = 'inline-block';
-                
-                if (gameState.isPaused) {
-                    currentStartBtn.textContent = 'スタート';
-                    currentStartBtn.classList.remove('warning');
-                } else {
-                    currentStartBtn.textContent = '一時停止';
-                    currentStartBtn.classList.add('warning');
+                currentStartBtn.textContent = '一時停止';
+                currentStartBtn.classList.add('warning');
+            }
+        }
+        DOMElements.turnIndicator.style.display = gameState.mode === 'player-vs-player' ? 'block' : 'none';
+        if (gameState.mode === 'player-vs-player') DOMElements.turnIndicator.textContent = isPlayerTurn ? `${gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent} の番です` : '';
+    }
+
+    function updateHandDisplays(hand1, hand2) {
+        [DOMElements.playerHand, DOMElements.aiHand].forEach(el => el.classList.remove('pop-in'));
+        void DOMElements.playerHand.offsetWidth;
+        DOMElements.playerHand.innerHTML = HAND_EMOJIS[hand1];
+        DOMElements.aiHand.innerHTML = HAND_EMOJIS[hand2];
+    }
+
+    function resetHandDisplays() { clearTimeout(roundResetTimeoutId); [DOMElements.playerHand, DOMElements.aiHand].forEach(el => { el.innerHTML = '?'; }); }
+    function setResultMessage(message, type = '') { DOMElements.resultDisplay.textContent = message; DOMElements.resultDisplay.className = 'result-display'; if (type) DOMElements.resultDisplay.classList.add(`result-${type}`); }
+    function getWaitingMessage() { if (gameState.isOver) return DOMElements.resultDisplay.textContent; if (gameState.isPaused && gameState.currentRound === 0) return '「スタート」を押して開始'; if (gameState.isPaused) return '一時停止中...'; if (gameState.mode === 'ai-vs-ai') return '対戦中...'; let who = gameState.mode === 'player-vs-player' ? (gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent) : 'あなた'; return `${who}の手を選択してください`; }
+
+    function resetGame(length = 0) {
+        const savedSettings = JSON.parse(localStorage.getItem('jankenAiSettings')) || {};
+        const savedLog = JSON.parse(localStorage.getItem('jankenAiGameLog')) || [];
+
+        gameState = {
+            mode: gameState.mode || '', gameLength: length, setupComplete: false, currentRound: 0,
+            scores: { p1: 0, p2: 0, draw: 0 },
+            handsCount: { p1: { rock: 0, paper: 0, scissors: 0 }, p2: { rock: 0, paper: 0, scissors: 0 } },
+            history: { p1: [], p2: [], rounds: [0], p1_scores: [0], p2_scores: [0], draw_scores: [0] },
+            gameLog: savedLog,
+            isPaused: true, isOver: false,
+            p1TurnChoice: null, currentPlayer: 'p1',
+            settings: {
+                popupsEnabled: savedSettings.popupsEnabled !== undefined ? savedSettings.popupsEnabled : true,
+                dataAnalysisEnabled: savedSettings.dataAnalysisEnabled !== undefined ? savedSettings.dataAnalysisEnabled : true,
+                apiKey: savedSettings.apiKey || ''
+            }
+        };
+        clearTimeout(roundResetTimeoutId); clearInterval(aiVsAiIntervalId);
+        
+        DOMElements.popupsEnabledSwitch.checked = gameState.settings.popupsEnabled;
+        DOMElements.dataAnalysisEnabledSwitch.checked = gameState.settings.dataAnalysisEnabled;
+        DOMElements.apiKeyInput.value = gameState.settings.apiKey;
+        updateApiKeyStatus();
+        updateHistoryUI();
+
+        DOMElements.dataPanel.style.display = gameState.settings.dataAnalysisEnabled ? 'flex' : 'none';
+        DOMElements.gameContentGrid.classList.toggle('show-data-panel', gameState.settings.dataAnalysisEnabled);
+        DOMElements.modeSelectionContainer.style.display = 'block';
+        DOMElements.gameLengthContainer.style.display = 'none';
+        resetHandDisplays();
+        setResultMessage('「スタート」を押して開始');
+        updateUI();
+    }
+    
+    function saveSettings() {
+        localStorage.setItem('jankenAiSettings', JSON.stringify(gameState.settings));
+    }
+
+    function saveApiKey() {
+        gameState.settings.apiKey = DOMElements.apiKeyInput.value.trim();
+        saveSettings();
+        updateApiKeyStatus();
+        showNotification('APIキーを保存しました。', 2000);
+    }
+
+    function updateApiKeyStatus() {
+        if (gameState.settings.apiKey) {
+            DOMElements.apiKeyStatus.textContent = '保存済み';
+            DOMElements.apiKeyStatus.classList.add('saved');
+        } else {
+            DOMElements.apiKeyStatus.textContent = '未設定';
+            DOMElements.apiKeyStatus.classList.remove('saved');
+        }
+    }
+
+    function toggleAiLoader(show) {
+        const displayStyle = show ? 'flex' : 'none';
+        DOMElements.aiLoader.style.display = displayStyle;
+        if(gameState.mode === 'player-vs-ai') {
+            DOMElements.aiHand.style.display = show ? 'none' : 'flex';
+        } else if (gameState.mode === 'ai-vs-ai') {
+             DOMElements.playerHand.style.display = show ? 'none' : 'flex';
+             DOMElements.aiHand.style.display = show ? 'none' : 'flex';
+        }
+    }
+    
+    function logCompletedGame() {
+        if(gameState.currentRound === 0) return;
+
+        const modeText = {
+            'player-vs-ai': 'あなた VS AI (Gemini)',
+            'ai-vs-ai': 'AI (Gemini) VS AI (Gemini)',
+            'player-vs-player': 'あなた VS ユーザー2'
+        }[gameState.mode];
+
+        const logEntry = {
+            gameId: new Date().toISOString(),
+            mode: modeText,
+            p1Name: DOMElements.playerName.textContent,
+            p2Name: DOMElements.aiName.textContent,
+            finalScore: { ...gameState.scores },
+            gameLength: gameState.gameLength,
+            roundDetails: {
+                p1_hands: [...gameState.history.p1],
+                p2_hands: [...gameState.history.p2],
+            }
+        };
+
+        gameState.gameLog.push(logEntry);
+        if (gameState.gameLog.length > 100) {
+            gameState.gameLog.shift();
+        }
+        localStorage.setItem('jankenAiGameLog', JSON.stringify(gameState.gameLog));
+        updateHistoryUI();
+    }
+
+    function updateHistoryUI() {
+        const list = DOMElements.historyList;
+        const noHistoryMsg = DOMElements.noHistoryMessage;
+
+        list.innerHTML = '';
+
+        if (gameState.gameLog.length === 0) {
+            noHistoryMsg.style.display = 'block';
+            list.style.display = 'none';
+            DOMElements.clearHistoryButton.style.display = 'none';
+            return;
+        }
+
+        noHistoryMsg.style.display = 'none';
+        list.style.display = 'block';
+        DOMElements.clearHistoryButton.style.display = 'block';
+
+        [...gameState.gameLog].reverse().forEach(log => {
+            const item = document.createElement('li');
+            item.className = 'history-item';
+            item.dataset.gameId = log.gameId;
+            item.addEventListener('click', () => showHistoryDetail(log.gameId));
+
+            let winnerText, winnerClass;
+            if (log.finalScore.p1 > log.finalScore.p2) {
+                winnerText = `${log.p1Name} の勝利`;
+                winnerClass = 'win';
+            } else if (log.finalScore.p2 > log.finalScore.p1) {
+                winnerText = `${log.p2Name} の勝利`;
+                winnerClass = 'lose';
+            } else {
+                winnerText = '引き分け';
+                winnerClass = 'draw';
+            }
+
+            const formattedDate = new Date(log.gameId).toLocaleString('ja-JP');
+
+            item.innerHTML = `
+                <div class="history-meta">
+                    <div class="history-mode">${log.mode}</div>
+                    <div class="history-date">${formattedDate}</div>
+                </div>
+                <div class="history-result-summary">
+                    <div class="history-final-score">
+                        ${log.p1Name} ${log.finalScore.p1} - ${log.finalScore.p2} ${log.p2Name}
+                    </div>
+                    <div class="history-winner ${winnerClass}">${winnerText}</div>
+                    <div class="history-score-breakdown">
+                        (あいこ: ${log.finalScore.draw}回 / 全${log.finalScore.p1 + log.finalScore.p2 + log.finalScore.draw}ラウンド)
+                    </div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    function clearHistory() {
+        if (confirm('本当に対戦履歴をすべて削除しますか？この操作は取り消せません。')) {
+            gameState.gameLog = [];
+            localStorage.removeItem('jankenAiGameLog');
+            updateHistoryUI();
+            showNotification('履歴をクリアしました。', 2000);
+        }
+    }
+
+    function showHistoryDetail(gameId) {
+        const log = gameState.gameLog.find(g => g.gameId === gameId);
+        if (!log) return;
+
+        DOMElements.modalTitle.textContent = `${new Date(log.gameId).toLocaleString('ja-JP')} の対戦詳細`;
+        const detailList = DOMElements.modalDetailList;
+        detailList.innerHTML = '';
+
+        log.roundDetails.p1_hands.forEach((p1Hand, index) => {
+            const p2Hand = log.roundDetails.p2_hands[index];
+            const winner = determineWinner(p1Hand, p2Hand);
+            let resultText, resultClass;
+            if (winner === 'p1') { resultText = `${log.p1Name} 勝ち`; resultClass = 'win'; }
+            else if (winner === 'p2') { resultText = `${log.p2Name} 勝ち`; resultClass = 'lose'; }
+            else { resultText = 'あいこ'; resultClass = 'draw'; }
+
+            const item = document.createElement('li');
+            item.className = 'detail-item';
+            item.innerHTML = `
+                <div class="detail-round">Round ${index + 1}</div>
+                <div class="detail-hands">${log.p1Name}: ${HAND_EMOJIS[p1Hand]} vs ${HAND_EMOJIS[p2Hand]} :${log.p2Name}</div>
+                <div class="detail-result ${resultClass}">${resultText}</div>
+            `;
+            detailList.appendChild(item);
+        });
+
+        renderDetailCharts(log);
+        DOMElements.historyDetailModal.style.display = 'flex';
+    }
+
+    function hideHistoryDetail() {
+        DOMElements.historyDetailModal.style.display = 'none';
+        if (modalResultsChart) {
+            modalResultsChart.destroy();
+            modalResultsChart = null;
+        }
+        if (modalHandsChart) {
+            modalHandsChart.destroy();
+            modalHandsChart = null;
+        }
+    }
+
+    // ▼▼▼ 変更: モーダル内グラフのスタイルを統一 ▼▼▼
+    function renderDetailCharts(log) {
+        if (modalResultsChart) modalResultsChart.destroy();
+        if (modalHandsChart) modalHandsChart.destroy();
+
+        const p1Scores = [0], p2Scores = [0], drawScores = [0], rounds = [0];
+        let c_p1 = 0, c_p2 = 0, c_draw = 0;
+        for (let i = 0; i < log.roundDetails.p1_hands.length; i++) {
+            const winner = determineWinner(log.roundDetails.p1_hands[i], log.roundDetails.p2_hands[i]);
+            if(winner === 'p1') c_p1++;
+            else if (winner === 'p2') c_p2++;
+            else c_draw++;
+            p1Scores.push(c_p1);
+            p2Scores.push(c_p2);
+            drawScores.push(c_draw);
+            rounds.push(i + 1);
+        }
+
+        const p1HandCounts = { rock: 0, paper: 0, scissors: 0 };
+        const p2HandCounts = { rock: 0, paper: 0, scissors: 0 };
+        log.roundDetails.p1_hands.forEach(hand => p1HandCounts[hand]++);
+        log.roundDetails.p2_hands.forEach(hand => p2HandCounts[hand]++);
+        
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const commonOptions = getChartOptions(isDarkMode);
+        const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
+
+        modalResultsChart = new ApexCharts(document.querySelector("#modal-results-chart"), {
+            ...commonOptions, series: [{name: log.p1Name, data: rounds.map((r, i) => [r, p1Scores[i]]) }, { name: log.p2Name, data: rounds.map((r, i) => [r, p2Scores[i]]) }, { name: 'あいこ', data: rounds.map((r, i) => [r, drawScores[i]]) } ], colors: colors,
+            chart: { ...commonOptions.chart, type: 'line', height: 250 },
+            stroke: { curve: 'straight', width: 2 },
+            xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: rounds.length -1 || 1 },
+            yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, title: { text: '勝負の推移', align: 'left' }
+        });
+
+        modalHandsChart = new ApexCharts(document.querySelector("#modal-hands-chart"), {
+            ...commonOptions, series: [{ name: log.p1Name, data: Object.values(p1HandCounts) }, { name: log.p2Name, data: Object.values(p2HandCounts) }], colors: colors.slice(0, 2),
+            chart: { ...commonOptions.chart, type: 'bar', height: 250 },
+            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
+            xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } },
+            title: { text: '各手の合計選択回数', align: 'left' }, dataLabels: { enabled: false }
+        });
+        
+        modalResultsChart.render();
+        modalHandsChart.render();
+    }
+
+
+    function getChartOptions(isDarkMode) { return { chart: { fontFamily: 'Roboto, sans-serif', foreColor: isDarkMode ? '#e0e0e0' : '#2c3e50', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } } }, xaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' } }, axisBorder: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, axisTicks: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' } }, yaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' }, formatter: (val) => Math.round(val) } }, grid: { borderColor: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, legend: { labels: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', useSeriesColors: false }, markers: { radius: 4 } }, tooltip: { theme: isDarkMode ? 'dark' : 'light' } }; }
+    
+    function initializeCharts() {
+        if (!DOMElements.dataAnalysisEnabledSwitch.checked) return;
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const commonOptions = getChartOptions(isDarkMode);
+        const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
+        
+        if (resultsChart) resultsChart.destroy();
+        resultsChart = new ApexCharts(document.querySelector("#resultsChart"), { 
+            ...commonOptions, series: [], colors: colors, 
+            chart: { ...commonOptions.chart, id: 'resultsChart', type: 'line', height: 300 }, 
+            stroke: { curve: 'straight', width: 2 }, 
+            xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: 1 },
+            yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, 
+            title: { text: '勝負の推移', align: 'left' } 
+        });
+        
+        if (handsChart) handsChart.destroy();
+        handsChart = new ApexCharts(document.querySelector("#handsChart"), { 
+            ...commonOptions, series: [], colors: colors.slice(0, 2), 
+            chart: { ...commonOptions.chart, id: 'handsChart', type: 'bar', height: 300 }, 
+            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } }, 
+            xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, 
+            yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } }, 
+            title: { text: '各手の合計選択回数', align: 'left' }, 
+            dataLabels: { enabled: false } 
+        });
+
+        Promise.all([resultsChart.render(), handsChart.render()]).then(() => {
+            updateAllCharts();
+        });
+    }
+    
+    function updateAllCharts() {
+        if (!resultsChart || !handsChart || !gameState.settings.dataAnalysisEnabled) return;
+
+        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], gameState.mode !== 'ai-vs-ai');
+        handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
+        
+        if (resultsChart) {
+            const currentRound = gameState.currentRound;
+            let xAxisMin, xAxisMax;
+            if (currentRound > 200) {
+                xAxisMin = currentRound - 200;
+                xAxisMax = currentRound;
+            } else {
+                xAxisMin = 0;
+                xAxisMax = (currentRound === 0) ? 1 : (gameState.gameLength === Infinity ? currentRound : Math.max(currentRound, gameState.gameLength || 1));
+            }
+            
+            resultsChart.updateOptions({
+                xaxis: {
+                    min: xAxisMin,
+                    max: xAxisMax
                 }
-            }
-            DOMElements.turnIndicator.style.display = gameState.mode === 'player-vs-player' ? 'block' : 'none';
-            if (gameState.mode === 'player-vs-player') DOMElements.turnIndicator.textContent = isPlayerTurn ? `${gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent} の番です` : '';
-        }
-
-        function updateHandDisplays(hand1, hand2) {
-            [DOMElements.playerHand, DOMElements.aiHand].forEach(el => el.classList.remove('pop-in'));
-            void DOMElements.playerHand.offsetWidth;
-            DOMElements.playerHand.innerHTML = HAND_EMOJIS[hand1];
-            DOMElements.aiHand.innerHTML = HAND_EMOJIS[hand2];
-            if (gameState.settings.popupsEnabled) {
-                DOMElements.playerHand.classList.add('pop-in');
-                DOMElements.aiHand.classList.add('pop-in');
-            }
-        }
-
-        function resetHandDisplays() { clearTimeout(roundResetTimeoutId); [DOMElements.playerHand, DOMElements.aiHand].forEach(el => { el.classList.remove('pop-in'); el.innerHTML = '?'; }); }
-        function setResultMessage(message, type = '') { DOMElements.resultDisplay.textContent = message; DOMElements.resultDisplay.className = 'result-display'; if (type) DOMElements.resultDisplay.classList.add(`result-${type}`); }
-        function getWaitingMessage() { if (gameState.isOver) return DOMElements.resultDisplay.textContent; if (gameState.isPaused && gameState.currentRound === 0) return '「スタート」を押して開始'; if (gameState.isPaused) return '一時停止中...'; if (gameState.mode === 'ai-vs-ai') return '対戦中...'; let who = gameState.mode === 'player-vs-player' ? (gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent) : 'あなた'; return `${who}の手を選択してください`; }
-        
-        function resetGame(length = 0) {
-            gameState = {
-                mode: gameState.mode || '', gameLength: length, setupComplete: false, currentRound: 0,
-                scores: { p1: 0, p2: 0, draw: 0 },
-                handsCount: { p1: { rock: 0, paper: 0, scissors: 0 }, p2: { rock: 0, paper: 0, scissors: 0 } },
-                history: { p1: [], p2: [], rounds: [0], p1_scores: [0], p2_scores: [0], draw_scores: [0] },
-                isPaused: true, isOver: false,
-                p1TurnChoice: null, currentPlayer: 'p1',
-                settings: gameState.settings || { popupsEnabled: true, dataAnalysisEnabled: true }
-            };
-            clearTimeout(roundResetTimeoutId); clearInterval(aiVsAiIntervalId);
-            DOMElements.popupsEnabledSwitch.checked = gameState.settings.popupsEnabled;
-            DOMElements.dataAnalysisEnabledSwitch.checked = gameState.settings.dataAnalysisEnabled;
-            DOMElements.dataPanel.style.display = gameState.settings.dataAnalysisEnabled ? 'flex' : 'none';
-            DOMElements.gameContentGrid.classList.toggle('show-data-panel', gameState.settings.dataAnalysisEnabled);
-            DOMElements.modeSelectionContainer.style.display = 'block';
-            DOMElements.gameLengthContainer.style.display = 'none';
-            resetHandDisplays();
-            setResultMessage('「スタート」を押して開始');
-            updateUI();
-        }
-        
-        function getChartOptions(isDarkMode) { return { chart: { fontFamily: 'Roboto, sans-serif', foreColor: isDarkMode ? '#e0e0e0' : '#2c3e50', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } } }, xaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' } }, axisBorder: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, axisTicks: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' } }, yaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' }, formatter: (val) => Math.round(val) } }, grid: { borderColor: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, legend: { labels: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', useSeriesColors: false }, markers: { radius: 4 } }, tooltip: { theme: isDarkMode ? 'dark' : 'light' } }; }
-        
-        // ▼▼▼ 変更点2: グラフの初期化処理に高さ(height)指定を追加しました ▼▼▼
-        function initializeCharts() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const commonOptions = getChartOptions(isDarkMode);
-            const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
-            
-            if (resultsChart) resultsChart.destroy();
-            resultsChart = new ApexCharts(document.querySelector("#resultsChart"), { 
-                ...commonOptions, 
-                series: [], 
-                colors: colors, 
-                // heightプロパティを追加してお好みの高さに設定します (例: 500px)
-                chart: { ...commonOptions.chart, id: 'resultsChart', type: 'line', height: 500 }, 
-                stroke: { curve: 'straight', width: 2 }, 
-                xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: 1 },
-                yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, 
-                title: { text: '勝負の推移', align: 'left' } 
-            });
-            
-            if (handsChart) handsChart.destroy();
-            handsChart = new ApexCharts(document.querySelector("#handsChart"), { 
-                ...commonOptions, 
-                series: [], 
-                colors: colors.slice(0, 2), 
-                // こちらのグラフにもheightプロパティを追加します (例: 450px)
-                chart: { ...commonOptions.chart, id: 'handsChart', type: 'bar', height: 450 }, 
-                plotOptions: { bar: { horizontal: false, columnWidth: '55%' } }, 
-                xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, 
-                yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } }, 
-                title: { text: '各手の合計選択回数', align: 'left' }, 
-                dataLabels: { enabled: false } 
-            });
-
-            Promise.all([resultsChart.render(), handsChart.render()]).then(() => {
-                updateAllCharts();
             });
         }
-        
-        function updateAllCharts() {
-            if (!resultsChart || !handsChart) return;
+    }
+    
+    function updateAllChartsTheme() { if (gameState.settings.dataAnalysisEnabled) { const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches); if (resultsChart) resultsChart.updateOptions(opts); if (handsChart) handsChart.updateOptions(opts); } }
+    function showNotification(message, duration = 3000) { clearTimeout(notificationTimeoutId); DOMElements.notificationMessage.textContent = message; DOMElements.notificationArea.classList.add('show'); notificationTimeoutId = setTimeout(() => DOMElements.notificationArea.classList.remove('show'), duration); }
+    
+    document.addEventListener('DOMContentLoaded', () => { resetGame(); initializeEventListeners(); showTab('setup'); });
+</script>
 
-            resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], gameState.mode !== 'ai-vs-ai');
-            handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
-            
-            if (resultsChart) {
-                const currentRound = gameState.currentRound;
-                let xAxisMin, xAxisMax;
-                if (currentRound > 200) {
-                    xAxisMin = currentRound - 200;
-                    xAxisMax = currentRound;
-                } else {
-                    xAxisMin = 0;
-                    xAxisMax = (currentRound === 0) ? 1 : currentRound;
-                }
-                
-                resultsChart.updateOptions({
-                    xaxis: {
-                        min: xAxisMin,
-                        max: xAxisMax
-                    }
-                });
-            }
-        }
-        
-        function updateAllChartsTheme() { if (gameState.settings.dataAnalysisEnabled) { const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches); if (resultsChart) resultsChart.updateOptions(opts); if (handsChart) handsChart.updateOptions(opts); } }
-        function showNotification(message, duration = 3000) { clearTimeout(notificationTimeoutId); DOMElements.notificationMessage.textContent = message; DOMElements.notificationArea.classList.add('show'); notificationTimeoutId = setTimeout(() => DOMElements.notificationArea.classList.remove('show'), duration); }
-        
-        document.addEventListener('DOMContentLoaded', () => { resetGame(); initializeEventListeners(); showTab('setup'); });
-    </script>
 </body>
 </html>
