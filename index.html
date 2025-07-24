@@ -85,7 +85,7 @@
 
         .card { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px var(--card-shadow); animation: fadeIn 0.6s; }
         #setup-card, #settings-card, #history-card { max-width: 700px; margin: 20px auto; }
-        .card h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .card h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
         .card .card-description { margin-top: -5px; margin-bottom: 20px; color: var(--secondary-text); }
 
         .content-grid { display: grid; gap: 25px; }
@@ -218,6 +218,28 @@
             .history-item { grid-template-columns: 1fr; text-align: center; }
             .detail-item { text-align: center; }
         }
+
+        /* ▼▼▼ 追加 ▼▼▼: 戻るボタン用のスタイル */
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s, color 0.2s;
+        }
+        .back-button:hover {
+            opacity: 1;
+            color: var(--text-color);
+        }
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+        }
     </style>
 </head>
 <body>
@@ -257,12 +279,20 @@
                         <h2>1. モード選択</h2>
                         <div style="display: flex; flex-direction: column; gap: 15px;">
                             <div class="mode-card-option" data-mode="player-vs-ai"><h3>あなた VS AI (Gemini)</h3><p>AIの次の手を予測して勝利を目指せ！</p></div>
-                            <div class="mode-card-option" data-mode="ai-vs-ai"><h3>AI(Gemini) VS AI(Gemini)</h3><p>AI同士の高速対戦を観戦しよう。</p></div>
+                            <!-- ▼▼▼ 変更 ▼▼▼: AI VS AI モードを削除 -->
                             <div class="mode-card-option" data-mode="player-vs-player"><h3>あなた VS ユーザー2</h3><p>友達や家族と対戦しよう。</p></div>
                         </div>
                     </div>
                     <div id="game-length-container" style="display: none;">
-                        <h2>2. 勝負回数選択</h2>
+                         <!-- ▼▼▼ 追加 ▼▼▼: 戻るボタンを含むヘッダー -->
+                        <h2>
+                            <span>2. 勝負回数選択</span>
+                            <button id="back-to-mode-selection" class="back-button" title="モード選択に戻る">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                                </svg>
+                            </button>
+                        </h2>
                         <p class="card-description">何回勝負で決着をつけますか？回数が多いほど戦略が重要になります。</p>
                         <div class="button-group" id="game-length-buttons">
                             <button data-length="1">一発勝負</button> <button data-length="3">3回</button> <button data-length="5">5回</button>
@@ -309,18 +339,6 @@
                                     <button id="start-pause-button">スタート</button>
                                     <button id="quit-button" class="danger" style="display: none;">やめる</button>
                                     <button id="new-game-button" class="warning" style="display: none;">別のゲームを始める</button>
-                                </div>
-                            </div>
-                            <div id="ai-vs-ai-controls">
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-                                   <label for="ai-speed-slider">対戦速度:</label>
-                                   <input type="range" id="ai-speed-slider" min="1" max="10" value="2" style="flex-grow: 1; max-width: 200px;">
-                                   <span id="ai-speed-display" style="font-weight: 700; min-width: 30px;">2</span>回/秒
-                                </div>
-                                <div class="controls-group button-group">
-                                    <button id="ai-vs-ai-start-stop">スタート</button>
-                                    <button id="ai-quit-button" class="danger" style="display: none;">やめる</button>
-                                    <button id="ai-new-game-button" class="warning" style="display: none;">別のゲームを始める</button>
                                 </div>
                             </div>
                         </div>
@@ -419,7 +437,7 @@
     let gameState = {};
     let resultsChart = null, handsChart = null;
     let modalResultsChart = null, modalHandsChart = null;
-    let aiVsAiIntervalId = null, roundResetTimeoutId = null, notificationTimeoutId = null;
+    let roundResetTimeoutId = null, notificationTimeoutId = null; // ▼▼▼ 変更 ▼▼▼: aiVsAiIntervalId を削除
 
     const DOMElements = {
         navItems: document.querySelectorAll('.nav-item'),
@@ -427,6 +445,7 @@
         gameContentGrid: document.getElementById('game-content-grid'),
         modeSelectionContainer: document.getElementById('mode-selection-container'),
         gameLengthContainer: document.getElementById('game-length-container'),
+        backToModeSelectionButton: document.getElementById('back-to-mode-selection'), // ▼▼▼ 追加 ▼▼▼
         modeCards: document.querySelectorAll('.mode-card-option'),
         gameLengthButtons: document.getElementById('game-length-buttons'),
         dataPanel: document.querySelector('.data-panel'),
@@ -449,12 +468,6 @@
         startPauseButton: document.getElementById('start-pause-button'),
         quitButton: document.getElementById('quit-button'),
         newGameButton: document.getElementById('new-game-button'),
-        aiVsAiControls: document.getElementById('ai-vs-ai-controls'),
-        aiSpeedSlider: document.getElementById('ai-speed-slider'),
-        aiSpeedDisplay: document.getElementById('ai-speed-display'),
-        aiStartStopButton: document.getElementById('ai-vs-ai-start-stop'),
-        aiQuitButton: document.getElementById('ai-quit-button'),
-        aiNewGameButton: document.getElementById('ai-new-game-button'),
         p1HandsTitle: document.getElementById('player1-hands-title'), p2HandsTitle: document.getElementById('player2-hands-title'),
         p1Rock: document.getElementById('p1-rock-count'), p1Paper: document.getElementById('p1-paper-count'), p1Scissors: document.getElementById('p1-scissors-count'),
         p2Rock: document.getElementById('p2-rock-count'), p2Paper: document.getElementById('p2-paper-count'), p2Scissors: document.getElementById('p2-scissors-count'),
@@ -477,15 +490,15 @@
     function initializeEventListeners() {
         DOMElements.navItems.forEach(item => item.addEventListener('click', () => showTab(item.dataset.tab)));
         DOMElements.modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
+        DOMElements.backToModeSelectionButton.addEventListener('click', goBackToModeSelection); // ▼▼▼ 追加 ▼▼▼
         DOMElements.gameLengthButtons.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') setGameLength(e.target.dataset.length === 'Infinity' ? Infinity : parseInt(e.target.dataset.length));
         });
         DOMElements.goToSetupBtn.addEventListener('click', () => showTab('setup'));
         DOMElements.playerChoiceButtons.forEach(button => button.addEventListener('click', () => playerChoose(button.dataset.hand)));
-        [DOMElements.startPauseButton, DOMElements.aiStartStopButton].forEach(btn => btn.addEventListener('click', togglePause));
-        [DOMElements.quitButton, DOMElements.aiQuitButton].forEach(btn => btn.addEventListener('click', quitGame));
-        [DOMElements.newGameButton, DOMElements.aiNewGameButton].forEach(btn => btn.addEventListener('click', () => { resetGame(); showTab('setup'); }));
-        DOMElements.aiSpeedSlider.addEventListener('input', (e) => updateSpeedDisplay(e.target.value));
+        DOMElements.startPauseButton.addEventListener('click', togglePause);
+        DOMElements.quitButton.addEventListener('click', quitGame);
+        DOMElements.newGameButton.addEventListener('click', () => { resetGame(); showTab('setup'); });
         DOMElements.popupsEnabledSwitch.addEventListener('change', (e) => { gameState.settings.popupsEnabled = e.target.checked; saveSettings(); });
         DOMElements.dataAnalysisEnabledSwitch.addEventListener('change', (e) => {
             gameState.settings.dataAnalysisEnabled = e.target.checked;
@@ -523,32 +536,38 @@
     }
 
     function selectMode(mode) {
-        if ((mode === 'player-vs-ai' || mode === 'ai-vs-ai') && !gameState.settings.apiKey) {
+        if (mode === 'player-vs-ai' && !gameState.settings.apiKey) {
             showNotification('先に設定画面でGemini APIキーを設定してください。', 4000);
             showTab('settings');
             return;
         }
         gameState.mode = mode;
         let p1Name = 'あなた', p2Name = 'AI';
-        if (mode === 'ai-vs-ai') { p1Name = 'AI 1'; p2Name = 'AI 2'; }
-        else if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
+        // ▼▼▼ 変更 ▼▼▼: AI VS AI モードの分岐を削除し、player-vs-playerのロジックのみ残す
+        if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
+        
         [DOMElements.playerName, DOMElements.p1HandsTitle, DOMElements.playerScoreLabel].forEach(el => el.textContent = p1Name);
         [DOMElements.aiName, DOMElements.p2HandsTitle, DOMElements.aiScoreLabel].forEach(el => el.textContent = p2Name);
         DOMElements.modeSelectionContainer.style.display = 'none';
         DOMElements.gameLengthContainer.style.display = 'block';
         DOMElements.gameLengthContainer.style.animation = 'fadeIn 0.6s';
     }
+    
+    // ▼▼▼ 追加 ▼▼▼: モード選択画面に戻る関数
+    function goBackToModeSelection() {
+        DOMElements.gameLengthContainer.style.display = 'none';
+        DOMElements.modeSelectionContainer.style.display = 'block';
+        DOMElements.modeSelectionContainer.style.animation = 'fadeIn 0.6s';
+    }
+
 
     function setGameLength(length) {
         resetGame(length);
         gameState.setupComplete = true;
-        if (gameState.mode === 'player-vs-ai' || gameState.mode === 'player-vs-player') {
-            DOMElements.playerControls.style.display = 'block';
-            DOMElements.aiVsAiControls.style.display = 'none';
-        } else {
-            DOMElements.playerControls.style.display = 'none';
-            DOMElements.aiVsAiControls.style.display = 'block';
-        }
+        
+        // ▼▼▼ 変更 ▼▼▼: AI VS AIのコントロール表示ロジックを削除
+        DOMElements.playerControls.style.display = 'block';
+
         if (gameState.settings.dataAnalysisEnabled) initializeCharts();
         updateUI();
         showTab('game');
@@ -584,7 +603,6 @@
     function quitGame() {
         gameState.isOver = true;
         gameState.isPaused = true;
-        if (gameState.mode === 'ai-vs-ai') stopAiVsAi();
         logCompletedGame();
         updateUI();
     }
@@ -593,8 +611,8 @@
         if (gameState.isOver) return;
         gameState.isPaused = !gameState.isPaused;
         clearTimeout(roundResetTimeoutId);
-        if (gameState.mode === 'ai-vs-ai') gameState.isPaused ? stopAiVsAi() : startAiVsAi();
-        else setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
+        // ▼▼▼ 変更 ▼▼▼: AI VS AI のロジックを削除
+        setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
         updateUI();
     }
 
@@ -622,7 +640,8 @@
         updateUI();
         checkGameEnd();
         if (!gameState.isOver && !gameState.isPaused) {
-            const delay = (gameState.mode === 'ai-vs-ai') ? Math.max(50, 1000 / DOMElements.aiSpeedSlider.value) : 2000;
+            // ▼▼▼ 変更 ▼▼▼: AI VS AI のロジックを削除
+            const delay = 2000;
             roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
         }
     }
@@ -638,11 +657,8 @@
         }
 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        
-        // ▼▼▼ 変更 ▼▼▼: 履歴を過去100回まで取得するように変更
         const historyText = opponentHistory.slice(-100).join(', ') || 'まだありません';
 
-        // ▼▼▼ 変更 ▼▼▼: プロンプト内のテキストを「10回」から「100回」に変更
         const prompt = `あなたは「${myName}」という名前のじゃんけんの達人です。対戦相手の過去100回の手の履歴は次の通りです: [${historyText}]。
         この履歴を分析し、相手が次に出す可能性が最も高い手を予測してください。そして、その手に勝つための手を考えてください。
         回答は "rock", "paper", "scissors" のいずれか一つだけをJSON形式で返してください。
@@ -698,29 +714,8 @@
         }
         updateUI();
     }
-
-    function startAiVsAi() { DOMElements.aiSpeedSlider.disabled = true; aiVsAiIntervalId = setInterval(runAiVsAiRound, 1000 / DOMElements.aiSpeedSlider.value); }
-    function stopAiVsAi() { DOMElements.aiSpeedSlider.disabled = false; clearInterval(aiVsAiIntervalId); toggleAiLoader(false); }
     
-    async function runAiVsAiRound() {
-        if (gameState.isPaused || gameState.isOver) { stopAiVsAi(); return; }
-        
-        toggleAiLoader(true);
-        const [hand1, hand2] = await Promise.all([
-            getGeminiHand(gameState.history.p2, 'AI 1'),
-            getGeminiHand(gameState.history.p1, 'AI 2')
-        ]);
-        toggleAiLoader(false);
-
-        if (hand1 && hand2) {
-            playRound(hand1, hand2);
-        } else {
-            stopAiVsAi();
-            setResultMessage('APIエラーのため対戦を中断しました。', 'lose');
-        }
-    }
-
-    function updateSpeedDisplay(value) { DOMElements.aiSpeedDisplay.textContent = value; if (!gameState.isPaused) { stopAiVsAi(); startAiVsAi(); } }
+    // ▼▼▼ 変更 ▼▼▼: AI VS AI 関連の関数 (startAiVsAi, stopAiVsAi, runAiVsAiRound, updateSpeedDisplay) を全て削除
 
     function updateUI() {
         const lengthDisplay = gameState.gameLength === Infinity ? '∞' : gameState.gameLength;
@@ -742,28 +737,25 @@
         const isPlayerTurn = !gameState.isPaused && !gameState.isOver;
         DOMElements.playerChoiceButtons.forEach(b => b.disabled = !isPlayerTurn);
         
-        const startBtn = DOMElements.startPauseButton, aiStartBtn = DOMElements.aiStartStopButton;
-        const quitBtn = DOMElements.quitButton, aiQuitBtn = DOMElements.aiQuitButton;
-        const newGameBtn = DOMElements.newGameButton, aiNewGameBtn = DOMElements.aiNewGameButton;
+        // ▼▼▼ 変更 ▼▼▼: AI VS AI のボタン変数を削除
+        const startBtn = DOMElements.startPauseButton;
+        const quitBtn = DOMElements.quitButton;
+        const newGameBtn = DOMElements.newGameButton;
         
-        [startBtn, aiStartBtn, quitBtn, aiQuitBtn, newGameBtn, aiNewGameBtn].forEach(b => b.style.display = 'none');
-
-        const currentStartBtn = gameState.mode === 'ai-vs-ai' ? aiStartBtn : startBtn;
-        const currentQuitBtn = gameState.mode === 'ai-vs-ai' ? aiQuitBtn : quitBtn;
-        const currentNewGameBtn = gameState.mode === 'ai-vs-ai' ? aiNewGameBtn : newGameBtn;
+        [startBtn, quitBtn, newGameBtn].forEach(b => b.style.display = 'none');
 
         if (gameState.isOver) {
-            currentNewGameBtn.style.display = 'inline-block';
+            newGameBtn.style.display = 'inline-block';
         } else {
-            currentStartBtn.style.display = 'inline-block';
-            if (!gameState.isPaused) currentQuitBtn.style.display = 'inline-block';
+            startBtn.style.display = 'inline-block';
+            if (!gameState.isPaused) quitBtn.style.display = 'inline-block';
             
             if (gameState.isPaused) {
-                currentStartBtn.textContent = 'スタート';
-                currentStartBtn.classList.remove('warning');
+                startBtn.textContent = 'スタート';
+                startBtn.classList.remove('warning');
             } else {
-                currentStartBtn.textContent = '一時停止';
-                currentStartBtn.classList.add('warning');
+                startBtn.textContent = '一時停止';
+                startBtn.classList.add('warning');
             }
         }
         DOMElements.turnIndicator.style.display = gameState.mode === 'player-vs-player' ? 'block' : 'none';
@@ -779,7 +771,7 @@
 
     function resetHandDisplays() { clearTimeout(roundResetTimeoutId); [DOMElements.playerHand, DOMElements.aiHand].forEach(el => { el.innerHTML = '?'; }); }
     function setResultMessage(message, type = '') { DOMElements.resultDisplay.textContent = message; DOMElements.resultDisplay.className = 'result-display'; if (type) DOMElements.resultDisplay.classList.add(`result-${type}`); }
-    function getWaitingMessage() { if (gameState.isOver) return DOMElements.resultDisplay.textContent; if (gameState.isPaused && gameState.currentRound === 0) return '「スタート」を押して開始'; if (gameState.isPaused) return '一時停止中...'; if (gameState.mode === 'ai-vs-ai') return '対戦中...'; let who = gameState.mode === 'player-vs-player' ? (gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent) : 'あなた'; return `${who}の手を選択してください`; }
+    function getWaitingMessage() { if (gameState.isOver) return DOMElements.resultDisplay.textContent; if (gameState.isPaused && gameState.currentRound === 0) return '「スタート」を押して開始'; if (gameState.isPaused) return '一時停止中...'; let who = gameState.mode === 'player-vs-player' ? (gameState.currentPlayer === 'p1' ? DOMElements.playerName.textContent : DOMElements.aiName.textContent) : 'あなた'; return `${who}の手を選択してください`; }
 
     function resetGame(length = 0) {
         const savedSettings = JSON.parse(localStorage.getItem('jankenAiSettings')) || {};
@@ -799,7 +791,7 @@
                 apiKey: savedSettings.apiKey || ''
             }
         };
-        clearTimeout(roundResetTimeoutId); clearInterval(aiVsAiIntervalId);
+        clearTimeout(roundResetTimeoutId);
         
         DOMElements.popupsEnabledSwitch.checked = gameState.settings.popupsEnabled;
         DOMElements.dataAnalysisEnabledSwitch.checked = gameState.settings.dataAnalysisEnabled;
@@ -840,20 +832,15 @@
     function toggleAiLoader(show) {
         const displayStyle = show ? 'flex' : 'none';
         DOMElements.aiLoader.style.display = displayStyle;
-        if(gameState.mode === 'player-vs-ai') {
-            DOMElements.aiHand.style.display = show ? 'none' : 'flex';
-        } else if (gameState.mode === 'ai-vs-ai') {
-             DOMElements.playerHand.style.display = show ? 'none' : 'flex';
-             DOMElements.aiHand.style.display = show ? 'none' : 'flex';
-        }
+        DOMElements.aiHand.style.display = show ? 'none' : 'flex'; // ▼▼▼ 変更 ▼▼▼: AI VS AIの分岐を削除
     }
     
     function logCompletedGame() {
         if(gameState.currentRound === 0) return;
 
+        // ▼▼▼ 変更 ▼▼▼: AI VS AI のモードテキストを削除
         const modeText = {
             'player-vs-ai': 'あなた VS AI (Gemini)',
-            'ai-vs-ai': 'AI (Gemini) VS AI (Gemini)',
             'player-vs-player': 'あなた VS ユーザー2'
         }[gameState.mode];
 
@@ -1069,7 +1056,7 @@
     function updateAllCharts() {
         if (!resultsChart || !handsChart || !gameState.settings.dataAnalysisEnabled) return;
 
-        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], gameState.mode !== 'ai-vs-ai');
+        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], true); // ▼▼▼ 変更 ▼▼▼: animateの引数を簡略化
         handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
         
         if (resultsChart) {
