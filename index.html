@@ -185,7 +185,61 @@
         .history-winner.lose { color: var(--danger-color); }
         .history-winner.draw { color: var(--secondary-text); }
         #no-history-message { text-align: center; color: var(--secondary-text); padding: 40px 20px; }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* ▼▼▼ 変更/追加 ▼▼▼: フィルター関連のスタイル */
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;}
+        .history-controls { display: flex; align-items: center; gap: 10px; }
+        .filter-container { position: relative; }
+        button.secondary-button {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+        }
+        button.secondary-button:hover {
+            background-color: color-mix(in srgb, var(--card-bg) 95%, var(--primary-color));
+            border-color: var(--primary-color);
+        }
+        button.secondary-button svg { width: 16px; height: 16px; fill: currentColor; }
+        .filter-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            width: 200px;
+            overflow: hidden;
+            animation: fadeIn 0.2s;
+        }
+        .filter-dropdown.show { display: block; }
+        .filter-dropdown ul { list-style: none; padding: 5px 0; margin: 0; }
+        .filter-dropdown li a {
+            display: block;
+            padding: 8px 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .filter-dropdown li a:hover { background-color: color-mix(in srgb, var(--card-bg) 90%, var(--primary-color)); }
+        .filter-dropdown .filter-header {
+            padding: 8px 15px;
+            font-size: 0.8em;
+            font-weight: 700;
+            color: var(--secondary-text);
+            text-transform: uppercase;
+        }
+        .filter-dropdown .filter-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 12px; max-width: 90%; width: 600px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: fadeIn 0.3s; }
@@ -219,7 +273,6 @@
             .detail-item { text-align: center; }
         }
 
-        /* ▼▼▼ 追加 ▼▼▼: 戻るボタン用のスタイル */
         .back-button {
             background: none;
             border: none;
@@ -279,12 +332,10 @@
                         <h2>1. モード選択</h2>
                         <div style="display: flex; flex-direction: column; gap: 15px;">
                             <div class="mode-card-option" data-mode="player-vs-ai"><h3>あなた VS AI (Gemini)</h3><p>AIの次の手を予測して勝利を目指せ！</p></div>
-                            <!-- ▼▼▼ 変更 ▼▼▼: AI VS AI モードを削除 -->
                             <div class="mode-card-option" data-mode="player-vs-player"><h3>あなた VS ユーザー2</h3><p>友達や家族と対戦しよう。</p></div>
                         </div>
                     </div>
                     <div id="game-length-container" style="display: none;">
-                         <!-- ▼▼▼ 追加 ▼▼▼: 戻るボタンを含むヘッダー -->
                         <h2>
                             <span>2. 勝負回数選択</span>
                             <button id="back-to-mode-selection" class="back-button" title="モード選択に戻る">
@@ -362,9 +413,32 @@
             
             <section id="history-section" class="tab-content">
                 <div id="history-card" class="card">
+                    <!-- ▼▼▼ 変更/追加 ▼▼▼: フィルター機能付きヘッダー -->
                     <div class="history-header">
-                       <h2>対戦履歴 (最大100件)</h2>
-                       <button id="clear-history-button" class="danger">履歴をクリア</button>
+                        <h2>対戦履歴 (最大100件)</h2>
+                        <div class="history-controls">
+                            <div class="filter-container">
+                                <button id="history-filter-button" class="secondary-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.74.439L7 12.439V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/></svg>
+                                    <span id="history-filter-label">フィルター</span>
+                                </button>
+                                <div id="history-filter-dropdown" class="filter-dropdown">
+                                    <ul>
+                                        <li><a href="#" data-filter-type="all">すべての履歴</a></li>
+                                        <li class="filter-divider"></li>
+                                        <li class="filter-header">勝敗で絞り込む</li>
+                                        <li><a href="#" data-filter-type="result" data-filter-value="win">あなたの勝ち</a></li>
+                                        <li><a href="#" data-filter-type="result" data-filter-value="lose">あなたの負け</a></li>
+                                        <li><a href="#" data-filter-type="result" data-filter-value="draw">引き分け</a></li>
+                                        <li class="filter-divider"></li>
+                                        <li class="filter-header">モードで絞り込む</li>
+                                        <li><a href="#" data-filter-type="mode" data-filter-value="あなた VS AI (Gemini)">あなた VS AI</a></li>
+                                        <li><a href="#" data-filter-type="mode" data-filter-value="あなた VS ユーザー2">あなた VS ユーザー2</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <button id="clear-history-button" class="danger">履歴をクリア</button>
+                        </div>
                     </div>
                     <ul id="history-list"></ul>
                     <p id="no-history-message">まだ対戦履歴がありません。</p>
@@ -437,7 +511,7 @@
     let gameState = {};
     let resultsChart = null, handsChart = null;
     let modalResultsChart = null, modalHandsChart = null;
-    let roundResetTimeoutId = null, notificationTimeoutId = null; // ▼▼▼ 変更 ▼▼▼: aiVsAiIntervalId を削除
+    let roundResetTimeoutId = null, notificationTimeoutId = null;
 
     const DOMElements = {
         navItems: document.querySelectorAll('.nav-item'),
@@ -445,7 +519,7 @@
         gameContentGrid: document.getElementById('game-content-grid'),
         modeSelectionContainer: document.getElementById('mode-selection-container'),
         gameLengthContainer: document.getElementById('game-length-container'),
-        backToModeSelectionButton: document.getElementById('back-to-mode-selection'), // ▼▼▼ 追加 ▼▼▼
+        backToModeSelectionButton: document.getElementById('back-to-mode-selection'),
         modeCards: document.querySelectorAll('.mode-card-option'),
         gameLengthButtons: document.getElementById('game-length-buttons'),
         dataPanel: document.querySelector('.data-panel'),
@@ -485,12 +559,16 @@
         modalTitle: document.getElementById('modal-title'),
         modalDetailList: document.getElementById('modal-detail-list'),
         modalCloseButton: document.getElementById('modal-close-button'),
+        // ▼▼▼ 変更/追加 ▼▼▼
+        historyFilterButton: document.getElementById('history-filter-button'),
+        historyFilterDropdown: document.getElementById('history-filter-dropdown'),
+        historyFilterLabel: document.getElementById('history-filter-label'),
     };
 
     function initializeEventListeners() {
         DOMElements.navItems.forEach(item => item.addEventListener('click', () => showTab(item.dataset.tab)));
         DOMElements.modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
-        DOMElements.backToModeSelectionButton.addEventListener('click', goBackToModeSelection); // ▼▼▼ 追加 ▼▼▼
+        DOMElements.backToModeSelectionButton.addEventListener('click', goBackToModeSelection);
         DOMElements.gameLengthButtons.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') setGameLength(e.target.dataset.length === 'Infinity' ? Infinity : parseInt(e.target.dataset.length));
         });
@@ -523,6 +601,25 @@
                 if (modalHandsChart) modalHandsChart.updateOptions(opts);
             }
         });
+        // ▼▼▼ 変更/追加 ▼▼▼: フィルター関連のイベントリスナー
+        DOMElements.historyFilterButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            DOMElements.historyFilterDropdown.classList.toggle('show');
+        });
+        DOMElements.historyFilterDropdown.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target.tagName === 'A') {
+                const type = e.target.dataset.filterType;
+                const value = e.target.dataset.filterValue;
+                const label = e.target.textContent;
+                applyHistoryFilter(type, value, label);
+            }
+        });
+        window.addEventListener('click', (e) => {
+            if (!DOMElements.historyFilterButton.contains(e.target)) {
+                DOMElements.historyFilterDropdown.classList.remove('show');
+            }
+        });
     }
 
     function showTab(tabId) {
@@ -543,7 +640,6 @@
         }
         gameState.mode = mode;
         let p1Name = 'あなた', p2Name = 'AI';
-        // ▼▼▼ 変更 ▼▼▼: AI VS AI モードの分岐を削除し、player-vs-playerのロジックのみ残す
         if (mode === 'player-vs-player') { p1Name = 'あなた'; p2Name = 'ユーザー2'; }
         
         [DOMElements.playerName, DOMElements.p1HandsTitle, DOMElements.playerScoreLabel].forEach(el => el.textContent = p1Name);
@@ -553,21 +649,16 @@
         DOMElements.gameLengthContainer.style.animation = 'fadeIn 0.6s';
     }
     
-    // ▼▼▼ 追加 ▼▼▼: モード選択画面に戻る関数
     function goBackToModeSelection() {
         DOMElements.gameLengthContainer.style.display = 'none';
         DOMElements.modeSelectionContainer.style.display = 'block';
         DOMElements.modeSelectionContainer.style.animation = 'fadeIn 0.6s';
     }
 
-
     function setGameLength(length) {
         resetGame(length);
         gameState.setupComplete = true;
-        
-        // ▼▼▼ 変更 ▼▼▼: AI VS AIのコントロール表示ロジックを削除
         DOMElements.playerControls.style.display = 'block';
-
         if (gameState.settings.dataAnalysisEnabled) initializeCharts();
         updateUI();
         showTab('game');
@@ -611,7 +702,6 @@
         if (gameState.isOver) return;
         gameState.isPaused = !gameState.isPaused;
         clearTimeout(roundResetTimeoutId);
-        // ▼▼▼ 変更 ▼▼▼: AI VS AI のロジックを削除
         setResultMessage(gameState.isPaused ? '一時停止中...' : getWaitingMessage(), 'draw');
         updateUI();
     }
@@ -640,7 +730,6 @@
         updateUI();
         checkGameEnd();
         if (!gameState.isOver && !gameState.isPaused) {
-            // ▼▼▼ 変更 ▼▼▼: AI VS AI のロジックを削除
             const delay = 2000;
             roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
         }
@@ -715,8 +804,6 @@
         updateUI();
     }
     
-    // ▼▼▼ 変更 ▼▼▼: AI VS AI 関連の関数 (startAiVsAi, stopAiVsAi, runAiVsAiRound, updateSpeedDisplay) を全て削除
-
     function updateUI() {
         const lengthDisplay = gameState.gameLength === Infinity ? '∞' : gameState.gameLength;
         DOMElements.roundInfo.textContent = `Round: ${gameState.currentRound} / ${lengthDisplay}`;
@@ -737,7 +824,6 @@
         const isPlayerTurn = !gameState.isPaused && !gameState.isOver;
         DOMElements.playerChoiceButtons.forEach(b => b.disabled = !isPlayerTurn);
         
-        // ▼▼▼ 変更 ▼▼▼: AI VS AI のボタン変数を削除
         const startBtn = DOMElements.startPauseButton;
         const quitBtn = DOMElements.quitButton;
         const newGameBtn = DOMElements.newGameButton;
@@ -789,7 +875,8 @@
                 popupsEnabled: savedSettings.popupsEnabled !== undefined ? savedSettings.popupsEnabled : true,
                 dataAnalysisEnabled: savedSettings.dataAnalysisEnabled !== undefined ? savedSettings.dataAnalysisEnabled : true,
                 apiKey: savedSettings.apiKey || ''
-            }
+            },
+            historyFilter: { type: 'all', value: null }, // ▼▼▼ 変更/追加 ▼▼▼
         };
         clearTimeout(roundResetTimeoutId);
         
@@ -832,13 +919,12 @@
     function toggleAiLoader(show) {
         const displayStyle = show ? 'flex' : 'none';
         DOMElements.aiLoader.style.display = displayStyle;
-        DOMElements.aiHand.style.display = show ? 'none' : 'flex'; // ▼▼▼ 変更 ▼▼▼: AI VS AIの分岐を削除
+        DOMElements.aiHand.style.display = show ? 'none' : 'flex';
     }
     
     function logCompletedGame() {
         if(gameState.currentRound === 0) return;
 
-        // ▼▼▼ 変更 ▼▼▼: AI VS AI のモードテキストを削除
         const modeText = {
             'player-vs-ai': 'あなた VS AI (Gemini)',
             'player-vs-player': 'あなた VS ユーザー2'
@@ -864,25 +950,62 @@
         localStorage.setItem('jankenAiGameLog', JSON.stringify(gameState.gameLog));
         updateHistoryUI();
     }
+    
+    // ▼▼▼ 変更/追加 ▼▼▼: フィルター適用関数
+    function applyHistoryFilter(type, value, label) {
+        gameState.historyFilter = { type, value };
+        DOMElements.historyFilterLabel.textContent = label;
+        DOMElements.historyFilterDropdown.classList.remove('show');
+        updateHistoryUI();
+    }
 
+    // ▼▼▼ 変更/追加 ▼▼▼: フィルターロジックを含むように更新
     function updateHistoryUI() {
         const list = DOMElements.historyList;
         const noHistoryMsg = DOMElements.noHistoryMessage;
-
         list.innerHTML = '';
 
+        let filteredLogs = [...gameState.gameLog];
+        const { type, value } = gameState.historyFilter;
+
+        if (type !== 'all') {
+            filteredLogs = filteredLogs.filter(log => {
+                if (type === 'mode') {
+                    return log.mode === value;
+                }
+                if (type === 'result') {
+                    const { p1, p2 } = log.finalScore;
+                    if (value === 'win') return p1 > p2;
+                    if (value === 'lose') return p2 > p1;
+                    if (value === 'draw') return p1 === p2;
+                }
+                return true;
+            });
+        }
+        
         if (gameState.gameLog.length === 0) {
+            noHistoryMsg.textContent = "まだ対戦履歴がありません。";
             noHistoryMsg.style.display = 'block';
             list.style.display = 'none';
             DOMElements.clearHistoryButton.style.display = 'none';
+            DOMElements.historyFilterButton.style.display = 'none';
+            return;
+        }
+
+        DOMElements.clearHistoryButton.style.display = 'block';
+        DOMElements.historyFilterButton.style.display = 'inline-flex';
+
+        if (filteredLogs.length === 0) {
+            noHistoryMsg.textContent = "このフィルターに一致する履歴はありません。";
+            noHistoryMsg.style.display = 'block';
+            list.style.display = 'none';
             return;
         }
 
         noHistoryMsg.style.display = 'none';
         list.style.display = 'block';
-        DOMElements.clearHistoryButton.style.display = 'block';
-
-        [...gameState.gameLog].reverse().forEach(log => {
+        
+        filteredLogs.reverse().forEach(log => {
             const item = document.createElement('li');
             item.className = 'history-item';
             item.dataset.gameId = log.gameId;
@@ -925,6 +1048,7 @@
         if (confirm('本当に対戦履歴をすべて削除しますか？この操作は取り消せません。')) {
             gameState.gameLog = [];
             localStorage.removeItem('jankenAiGameLog');
+            applyHistoryFilter('all', null, 'フィルター'); // フィルターをリセット
             updateHistoryUI();
             showNotification('履歴をクリアしました。', 2000);
         }
@@ -1018,7 +1142,6 @@
         modalHandsChart.render();
     }
 
-
     function getChartOptions(isDarkMode) { return { chart: { fontFamily: 'Roboto, sans-serif', foreColor: isDarkMode ? '#e0e0e0' : '#2c3e50', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } } }, xaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' } }, axisBorder: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, axisTicks: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' } }, yaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' }, formatter: (val) => Math.round(val) } }, grid: { borderColor: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, legend: { labels: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', useSeriesColors: false }, markers: { radius: 4 } }, tooltip: { theme: isDarkMode ? 'dark' : 'light' } }; }
     
     function initializeCharts() {
@@ -1056,7 +1179,7 @@
     function updateAllCharts() {
         if (!resultsChart || !handsChart || !gameState.settings.dataAnalysisEnabled) return;
 
-        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], true); // ▼▼▼ 変更 ▼▼▼: animateの引数を簡略化
+        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], true);
         handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
         
         if (resultsChart) {
