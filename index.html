@@ -966,13 +966,7 @@
     }
 
     async function playerChoose(hand) {
-        if (gameState.isPaused || gameState.isOver) return;
-        
-        // ▼▼▼ 変更/追加 ▼▼▼: プレイヤー2のターンでもボタンを無効化する処理を追加
-        if (gameState.mode === 'player-vs-player' && gameState.currentPlayer === 'p2' && !DOMElements.playerChoiceButtons[0].disabled) {
-             return;
-        }
-        
+        if (gameState.isPaused || gameState.isOver || !DOMElements.playerChoiceButtons[0].disabled === false) return;
         DOMElements.playerChoiceButtons.forEach(b => b.disabled = true);
         clearTimeout(roundResetTimeoutId);
 
@@ -990,15 +984,15 @@
                 gameState.currentPlayer = 'p2';
                 DOMElements.playerHand.innerHTML = CHECK_SVG;
                 DOMElements.aiHand.textContent = '?';
-                // ▼▼▼ 変更/追加 ▼▼▼: 次のプレイヤーのためにボタンを有効化
-                DOMElements.playerChoiceButtons.forEach(b => b.disabled = false); 
+                 // ▼▼▼ 変更/追加 ▼▼▼: ユーザー2の番になったらボタンを有効化する
+                DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
             } else {
                 playRound(gameState.p1TurnChoice, hand);
             }
         }
         updateUI();
-        if(gameState.mode === 'player-vs-ai') {
-            DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
+        if(gameState.mode !== 'player-vs-player') {
+             DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
         }
     }
 
@@ -1038,25 +1032,20 @@
         updateHandDisplays(hand1, hand2);
         setResultMessage(resultMessage, resultClass);
         if (gameState.settings.dataAnalysisEnabled) updateAllCharts();
-        
-        // ▼▼▼ 変更/追加 ▼▼▼: Player vs Playerモードのターンをリセット
-        if(gameState.mode === 'player-vs-player') {
-            gameState.currentPlayer = 'p1';
-        }
-        
         updateUI();
         checkGameEnd();
         if (!gameState.isOver && !gameState.isPaused) {
             const delay = 2000;
-            roundResetTimeoutId = setTimeout(() => {
-                if (gameState.isOver || gameState.isPaused) return;
-                resetHandDisplays();
-                setResultMessage(getWaitingMessage());
-                // ▼▼▼ 変更/追加 ▼▼▼: 次のラウンドのためにボタンを有効化
-                if (gameState.mode === 'player-vs-player' || gameState.mode === 'player-vs-ai') {
+            roundResetTimeoutId = setTimeout(() => { 
+                if (gameState.isOver || gameState.isPaused) return; 
+                resetHandDisplays(); 
+                setResultMessage(getWaitingMessage()); 
+                // ▼▼▼ 変更/追加 ▼▼▼: player-vs-playerモードのラウンドリセット後処理
+                if (gameState.mode === 'player-vs-player') {
+                    gameState.currentPlayer = 'p1';
                     DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
                 }
-                updateUI();
+                updateUI(); 
             }, delay);
         }
     }
