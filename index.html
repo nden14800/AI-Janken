@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- ▼▼▼ 変更/追加 ▼▼▼: highlight.jsの読み込み -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <style>
         :root {
             --bg-color: #f4f7f9;
@@ -84,7 +88,7 @@
         .tab-content.active { display: block; animation: fadeIn 0.4s; }
 
         .card { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px var(--card-shadow); animation: fadeIn 0.6s; }
-        #setup-card, #settings-card, #history-card { max-width: 700px; margin: 20px auto; }
+        #setup-card, #settings-card, #history-card, #info-card { max-width: 700px; margin: 20px auto; }
         .card h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
         .card .card-description { margin-top: -5px; margin-bottom: 20px; color: var(--secondary-text); }
 
@@ -94,6 +98,7 @@
         #game-play-card { position: relative; }
 
         .settings-item { display: flex; flex-direction: column; align-items: flex-start; padding: 15px 0; border-bottom: 1px solid var(--border-color); gap: 10px; }
+        .settings-item:last-child { border-bottom: none; }
         .settings-item-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0;}
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -292,6 +297,136 @@
             width: 20px;
             height: 20px;
         }
+
+        .ai-model-selector {
+            position: relative;
+            font-family: 'Roboto', sans-serif;
+        }
+        .ai-model-selector-header {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+        .ai-model-selector-header:hover {
+            border-color: var(--primary-color);
+            background-color: color-mix(in srgb, var(--card-bg) 95%, var(--primary-color));
+        }
+        .ai-model-selector-header .model-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .ai-model-selector-header .model-name {
+            font-weight: 500;
+        }
+        .ai-model-selector-header .model-id {
+            font-size: 0.8em;
+            color: var(--secondary-text);
+        }
+        .ai-model-selector-header .selector-icon {
+            transition: transform 0.2s;
+        }
+        .ai-model-selector.open .selector-icon {
+            transform: rotate(180deg);
+        }
+        .ai-model-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 20;
+            overflow: hidden;
+            animation: fadeIn 0.2s;
+        }
+        .ai-model-selector.open .ai-model-dropdown {
+            display: block;
+        }
+        .ai-model-dropdown ul {
+            list-style: none;
+            padding: 5px 0;
+            margin: 0;
+        }
+        .ai-model-dropdown li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .ai-model-dropdown li:hover {
+            background-color: color-mix(in srgb, var(--card-bg) 90%, var(--primary-color));
+        }
+        .ai-model-dropdown .model-id {
+            display: none;
+        }
+        .ai-model-dropdown .check-icon {
+            visibility: hidden;
+            color: var(--primary-color);
+        }
+        .ai-model-dropdown li.selected .check-icon {
+            visibility: visible;
+        }
+
+        /* ▼▼▼ 変更/追加 ▼▼▼: インフォメーションページのスタイル */
+        #info-card .info-section {
+            margin-bottom: 30px;
+        }
+        #info-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #info-card p, #info-card li {
+            line-height: 1.8;
+            color: var(--text-color);
+        }
+        #info-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        #info-card th, #info-card td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        #info-card th {
+            background-color: color-mix(in srgb, var(--bg-color) 80%, var(--secondary-text));
+            font-weight: 700;
+        }
+        #info-card code {
+            background-color: color-mix(in srgb, var(--border-color) 50%, transparent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        #info-card pre code {
+            display: block;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        #info-card .info-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        #info-card .info-link:hover {
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
@@ -318,6 +453,15 @@
                     <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                 </svg></span>
                 <span class="nav-item-label">設定</span>
+            </a>
+            <!-- ▼▼▼ 変更/追加 ▼▼▼: インフォメーションタブを追加 -->
+            <a class="nav-item" data-tab="info">
+                <span class="icon-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info" viewBox="0 0 16 16">
+                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                </span>
+                <span class="nav-item-label">インフォメーション</span>
             </a>
         </nav>
         <main id="main-content">
@@ -417,7 +561,6 @@
                         <div class="history-controls">
                             <div class="filter-container">
                                 <button id="history-filter-button" class="secondary-button">
-                                    <!-- ▼▼▼ 変更 ▼▼▼: SVGアイコンを変更 -->
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
                                         <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
                                     </svg>
@@ -465,6 +608,54 @@
 
                     <div class="settings-item">
                         <div class="settings-item-header">
+                            <label>対戦AIモデル</label>
+                        </div>
+                        <p class="card-description" style="margin-bottom: 5px; font-size: 0.9em;">
+                            対戦に使用するAIを選択します。APIキーが未設定、またはエラー発生時は自動的に「旧式」が使用されます。
+                        </p>
+                        <div class="ai-model-selector" id="ai-model-selector">
+                            <div class="ai-model-selector-header">
+                                <div class="model-info">
+                                    <span class="model-name" id="ai-model-current-name"></span>
+                                    <span class="model-id" id="ai-model-current-id"></span>
+                                </div>
+                                <span class="selector-icon" id="ai-model-selector-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="ai-model-dropdown" id="ai-model-dropdown">
+                                <ul>
+                                    <li data-model-id="gemini-2.5-flash" data-model-label="Gemini 2.5 Flash">
+                                        <div class="model-info">
+                                            <span class="model-name">Gemini 2.5 Flash</span>
+                                            <span class="model-id">gemini-2.5-flash</span>
+                                        </div>
+                                        <span class="check-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                            </svg>
+                                        </span>
+                                    </li>
+                                    <li data-model-id="legacy" data-model-label="旧式">
+                                        <div class="model-info">
+                                            <span class="model-name">旧式</span>
+                                            <span class="model-id">ランダム選択</span>
+                                        </div>
+                                        <span class="check-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                            </svg>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-item">
+                        <div class="settings-item-header">
                             <label for="popups-enabled-switch">手のポップアップアニメーション</label>
                             <label class="switch"><input type="checkbox" id="popups-enabled-switch" checked><span class="slider"></span></label>
                         </div>
@@ -476,6 +667,81 @@
                         </div>
                     </div>
                  </div>
+            </section>
+            
+            <!-- ▼▼▼ 変更/追加 ▼▼▼: インフォメーションセクションを追加 -->
+            <section id="info-section" class="tab-content">
+                <div id="info-card" class="card">
+                    <h2>インフォメーション</h2>
+            
+                    <div class="info-section">
+                        <h3>このアプリケーションについて</h3>
+                        <p>
+                            「じゃんけんAI with Gemini」は、Googleの最新AIモデル「Gemini」を搭載した先進的なじゃんけん対戦アプリケーションです。単なる運試しのゲームではなく、AIとの高度な心理戦、友人との対戦、そして詳細なデータ分析を通じて、じゃんけんの奥深さを探求することができます。
+                        </p>
+                        <p>
+                            このアプリケーションは、最新のウェブ技術を駆使して単一のHTMLファイルで構築されており、モダンなUI/UXデザインと高いインタラクティブ性を実現しています。ユーザーの皆様に最高のじゃんけん体験を提供することを目指して開発されました。
+                        </p>
+                    </div>
+            
+                    <div class="info-section">
+                        <h3>遊び方と機能解説</h3>
+                        <p>本アプリケーションは、直感的な操作で誰でも簡単にお楽しみいただけます。主な機能は以下の通りです。</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>機能</th>
+                                    <th>説明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>対戦設定</strong></td>
+                                    <td>ゲームを開始する前に、ここですべての設定を行います。「あなた VS AI」モードか「あなた VS ユーザー2」モードを選択し、次に対戦回数を決定します。無制限にプレイすることも可能です。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>対戦画面</strong></td>
+                                    <td>ゲームプレイの中核となる画面です。スコアボード、お互いの手、そして勝敗結果がリアルタイムで表示されます。データ分析パネルを有効にしている場合は、勝負の推移を示すグラフも動的に更新されます。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>履歴</strong></td>
+                                    <td>過去の対戦結果を最大100件まで自動で保存・閲覧できます。フィルター機能を使えば、「AIに勝った試合だけ」や「友達と遊んだ試合だけ」を絞り込んで表示することも可能です。各履歴をクリックすると、全ラウンドの詳細な内容と統計グラフを確認できます。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>設定</strong></td>
+                                    <td>アプリケーションの動作をカスタマイズします。Gemini AIと対戦するためのAPIキーの設定、AIモデルの選択、UIアニメーションのON/OFF、データ分析パネルの表示/非表示などを変更できます。設定はブラウザ内に安全に保存されます。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+            
+                    <div class="info-section">
+                        <h3>AIモデルの解説</h3>
+                        <p>このアプリケーションのAIは、設定画面から2つの異なる思考アルゴリズムを選択できます。</p>
+                        <ul>
+                            <li><strong>Gemini 2.5 Flash:</strong> Googleが開発した最新鋭の大規模言語モデル(LLM)です。このAIは、あなたが過去に出した最大100回の手の履歴を分析し、「次はこれを出す可能性が高い」というパターンを予測します。そして、その予測に対して最も勝率の高い手を戦略的に選択します。単なるランダムではなく、あなたの癖を読んでくるため、非常に手強い対戦相手となります。</li>
+                            <li><strong>旧式 (ランダムAI):</strong> 伝統的なコンピュータのじゃんけんです。過去のデータには一切依存せず、毎回完全にランダムで手を選択します。APIキーが未設定の場合や、API通信でエラーが発生した際のフォールバックとしても機能し、ゲームが中断しないように設計されています。</li>
+                        </ul>
+                        <p>AIの思考ロジックの核心部分は、Geminiに送られる以下の「プロンプト」によって制御されています。</p>
+                        <pre><code class="language-plaintext">あなたは「AI」という名前のじゃんけんの達人です。対戦相手の過去100回の手の履歴は次の通りです: [rock, paper, rock, ...]。
+この履歴を分析し、相手が次に出す可能性が最も高い手を予測してください。そして、その手に勝つための手を考えてください。
+回答は "rock", "paper", "scissors" のいずれか一つだけをJSON形式で返してください。</code></pre>
+                    </div>
+            
+                    <div class="info-section">
+                        <h3>技術スタックとライブラリ</h3>
+                        <p>このアプリケーションは、外部サーバーを必要としないフロントエンド完結型のシングルページアプリケーション(SPA)として構築されています。使用している主な技術は以下の通りです。</p>
+                        <ul>
+                            <li><strong>HTML5 / CSS3 / JavaScript (ES6+):</strong> ウェブの標準技術をベースに構築されています。</li>
+                            <li><strong>Google Gemini API:</strong> AIの思考エンジンとして<code>gemini-2.5-flash</code>モデルを利用しています。</li>
+                            <li><strong>ApexCharts.js:</strong> 対戦データ（勝敗推移、手の内訳）をリッチでインタラクティブなグラフとして可視化するために使用しています。</li>
+                            <li><strong>Highlight.js:</strong> このインフォメーションページでコードスニペットを美しく表示するために使用しています。</li>
+                        </ul>
+                        <p>
+                            UIデザインは、CSS変数（カスタムプロパティ）を全面的に活用しており、ライトモードとダークモードの切り替えを効率的に実現しています。また、`localStorage` APIを利用して、ユーザーの設定や対戦履歴をブラウザに永続化させています。
+                        </p>
+                    </div>
+                </div>
             </section>
         </main>
     </div>
@@ -563,6 +829,13 @@
         historyFilterButton: document.getElementById('history-filter-button'),
         historyFilterDropdown: document.getElementById('history-filter-dropdown'),
         historyFilterLabel: document.getElementById('history-filter-label'),
+        aiModelSelector: document.getElementById('ai-model-selector'),
+        aiModelSelectorHeader: document.querySelector('.ai-model-selector-header'),
+        aiModelCurrentName: document.getElementById('ai-model-current-name'),
+        aiModelCurrentId: document.getElementById('ai-model-current-id'),
+        aiModelSelectorIcon: document.getElementById('ai-model-selector-icon'),
+        aiModelDropdown: document.getElementById('ai-model-dropdown'),
+        aiModelOptions: document.querySelectorAll('#ai-model-dropdown li'),
     };
 
     function initializeEventListeners() {
@@ -589,9 +862,7 @@
         DOMElements.clearHistoryButton.addEventListener('click', clearHistory);
         DOMElements.modalCloseButton.addEventListener('click', hideHistoryDetail);
         DOMElements.historyDetailModal.addEventListener('click', (e) => {
-            if (e.target === DOMElements.historyDetailModal) {
-                hideHistoryDetail();
-            }
+            if (e.target === DOMElements.historyDetailModal) hideHistoryDetail();
         });
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             updateAllChartsTheme();
@@ -614,11 +885,46 @@
                 applyHistoryFilter(type, value, label);
             }
         });
+        DOMElements.aiModelSelectorHeader.addEventListener('click', () => {
+            DOMElements.aiModelSelector.classList.toggle('open');
+            const icon = DOMElements.aiModelSelector.classList.contains('open') 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>`;
+            DOMElements.aiModelSelectorIcon.innerHTML = icon;
+        });
+        DOMElements.aiModelOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const modelId = target.dataset.modelId;
+                const modelLabel = target.dataset.modelLabel;
+                gameState.settings.aiModel = modelId;
+                gameState.settings.aiModelLabel = modelLabel;
+                saveSettings();
+                updateAiModelSelectorUI();
+                DOMElements.aiModelSelector.classList.remove('open');
+                DOMElements.aiModelSelectorIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>`;
+            });
+        });
         window.addEventListener('click', (e) => {
             if (!DOMElements.historyFilterButton.contains(e.target)) {
                 DOMElements.historyFilterDropdown.classList.remove('show');
             }
+            if (!DOMElements.aiModelSelector.contains(e.target)) {
+                DOMElements.aiModelSelector.classList.remove('open');
+                DOMElements.aiModelSelectorIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/></svg>`;
+            }
         });
+    }
+
+    function updateAiModelSelectorUI() {
+        const { aiModel, aiModelLabel } = gameState.settings;
+        DOMElements.aiModelCurrentName.textContent = aiModelLabel;
+        
+        const selectedOption = document.querySelector(`#ai-model-dropdown li[data-model-id="${aiModel}"]`);
+        DOMElements.aiModelCurrentId.textContent = selectedOption.querySelector('.model-id').textContent;
+        
+        DOMElements.aiModelOptions.forEach(opt => opt.classList.remove('selected'));
+        selectedOption.classList.add('selected');
     }
 
     function showTab(tabId) {
@@ -632,8 +938,8 @@
     }
 
     function selectMode(mode) {
-        if (mode === 'player-vs-ai' && !gameState.settings.apiKey) {
-            showNotification('先に設定画面でGemini APIキーを設定してください。', 4000);
+        if (mode === 'player-vs-ai' && !gameState.settings.apiKey && gameState.settings.aiModel !== 'legacy') {
+            showNotification('先に設定画面でAPIキーを設定するか、AIモデルを「旧式」に変更してください。', 4000);
             showTab('settings');
             return;
         }
@@ -737,11 +1043,15 @@
     function determineWinner(hand1, hand2) { if (hand1 === hand2) return 'draw'; return WIN_CONDITIONS[hand1] === hand2 ? 'p1' : 'p2'; }
     
     async function getGeminiHand(opponentHistory, myName = 'AI') {
-        const apiKey = gameState.settings.apiKey;
+        const { aiModel, apiKey } = gameState.settings;
+
+        if (aiModel === 'legacy') {
+            return HANDS[Math.floor(Math.random() * 3)];
+        }
+
         if (!apiKey) {
-            showNotification('Gemini APIキーが設定されていません。', 4000);
-            showTab('settings');
-            return null;
+            showNotification('APIキー未設定のため、旧式AIを使用します。', 3000);
+            return HANDS[Math.floor(Math.random() * 3)];
         }
 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -768,7 +1078,7 @@
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Gemini API Error:', errorData);
-                showNotification(`APIエラー: ${errorData.error.message}`, 5000);
+                showNotification(`APIエラーのため旧式AIを使用: ${errorData.error.message}`, 5000);
                 return HANDS[Math.floor(Math.random() * 3)];
             }
 
@@ -783,7 +1093,7 @@
             }
         } catch (error) {
             console.error('Fetch Error:', error);
-            showNotification('AIとの通信に失敗しました。', 4000);
+            showNotification('通信エラーのため旧式AIを使用します。', 4000);
             return HANDS[Math.floor(Math.random() * 3)];
         }
     }
@@ -873,7 +1183,9 @@
             settings: {
                 popupsEnabled: savedSettings.popupsEnabled !== undefined ? savedSettings.popupsEnabled : true,
                 dataAnalysisEnabled: savedSettings.dataAnalysisEnabled !== undefined ? savedSettings.dataAnalysisEnabled : true,
-                apiKey: savedSettings.apiKey || ''
+                apiKey: savedSettings.apiKey || '',
+                aiModel: savedSettings.aiModel || 'gemini-2.5-flash',
+                aiModelLabel: savedSettings.aiModelLabel || 'Gemini 2.5 Flash',
             },
             historyFilter: { type: 'all', value: null },
         };
@@ -884,6 +1196,7 @@
         DOMElements.apiKeyInput.value = gameState.settings.apiKey;
         updateApiKeyStatus();
         updateHistoryUI();
+        updateAiModelSelectorUI();
 
         DOMElements.dataPanel.style.display = gameState.settings.dataAnalysisEnabled ? 'flex' : 'none';
         DOMElements.gameContentGrid.classList.toggle('show-data-panel', gameState.settings.dataAnalysisEnabled);
@@ -1181,19 +1494,14 @@
         
         if (resultsChart) {
             const currentRound = gameState.currentRound;
-            let xAxisMin, xAxisMax;
-            if (currentRound > 200) {
-                xAxisMin = currentRound - 200;
-                xAxisMax = currentRound;
-            } else {
-                xAxisMin = 0;
-                xAxisMax = (currentRound === 0) ? 1 : (gameState.gameLength === Infinity ? currentRound : Math.max(currentRound, gameState.gameLength || 1));
-            }
+            const xAxisMin = 0;
+            const xAxisMax = Math.max(currentRound, 1);
             
             resultsChart.updateOptions({
                 xaxis: {
                     min: xAxisMin,
-                    max: xAxisMax
+                    max: xAxisMax,
+                    tickAmount: Math.min(10, xAxisMax)
                 }
             });
         }
@@ -1202,7 +1510,13 @@
     function updateAllChartsTheme() { if (gameState.settings.dataAnalysisEnabled) { const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches); if (resultsChart) resultsChart.updateOptions(opts); if (handsChart) handsChart.updateOptions(opts); } }
     function showNotification(message, duration = 3000) { clearTimeout(notificationTimeoutId); DOMElements.notificationMessage.textContent = message; DOMElements.notificationArea.classList.add('show'); notificationTimeoutId = setTimeout(() => DOMElements.notificationArea.classList.remove('show'), duration); }
     
-    document.addEventListener('DOMContentLoaded', () => { resetGame(); initializeEventListeners(); showTab('setup'); });
+    document.addEventListener('DOMContentLoaded', () => {
+        resetGame();
+        initializeEventListeners();
+        showTab('setup');
+        // ▼▼▼ 変更/追加 ▼▼▼: highlight.jsを初期化
+        hljs.highlightAll();
+    });
 </script>
 
 </body>
