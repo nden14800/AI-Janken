@@ -186,7 +186,6 @@
         .history-winner.draw { color: var(--secondary-text); }
         #no-history-message { text-align: center; color: var(--secondary-text); padding: 40px 20px; }
         
-        /* ▼▼▼ 変更/追加 ▼▼▼: フィルター関連のスタイル */
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;}
         .history-controls { display: flex; align-items: center; gap: 10px; }
         .filter-container { position: relative; }
@@ -413,13 +412,15 @@
             
             <section id="history-section" class="tab-content">
                 <div id="history-card" class="card">
-                    <!-- ▼▼▼ 変更/追加 ▼▼▼: フィルター機能付きヘッダー -->
                     <div class="history-header">
                         <h2>対戦履歴 (最大100件)</h2>
                         <div class="history-controls">
                             <div class="filter-container">
                                 <button id="history-filter-button" class="secondary-button">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.74.439L7 12.439V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/></svg>
+                                    <!-- ▼▼▼ 変更 ▼▼▼: SVGアイコンを変更 -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filter" viewBox="0 0 16 16">
+                                        <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
+                                    </svg>
                                     <span id="history-filter-label">フィルター</span>
                                 </button>
                                 <div id="history-filter-dropdown" class="filter-dropdown">
@@ -559,7 +560,6 @@
         modalTitle: document.getElementById('modal-title'),
         modalDetailList: document.getElementById('modal-detail-list'),
         modalCloseButton: document.getElementById('modal-close-button'),
-        // ▼▼▼ 変更/追加 ▼▼▼
         historyFilterButton: document.getElementById('history-filter-button'),
         historyFilterDropdown: document.getElementById('history-filter-dropdown'),
         historyFilterLabel: document.getElementById('history-filter-label'),
@@ -601,7 +601,6 @@
                 if (modalHandsChart) modalHandsChart.updateOptions(opts);
             }
         });
-        // ▼▼▼ 変更/追加 ▼▼▼: フィルター関連のイベントリスナー
         DOMElements.historyFilterButton.addEventListener('click', (e) => {
             e.stopPropagation();
             DOMElements.historyFilterDropdown.classList.toggle('show');
@@ -876,7 +875,7 @@
                 dataAnalysisEnabled: savedSettings.dataAnalysisEnabled !== undefined ? savedSettings.dataAnalysisEnabled : true,
                 apiKey: savedSettings.apiKey || ''
             },
-            historyFilter: { type: 'all', value: null }, // ▼▼▼ 変更/追加 ▼▼▼
+            historyFilter: { type: 'all', value: null },
         };
         clearTimeout(roundResetTimeoutId);
         
@@ -951,7 +950,6 @@
         updateHistoryUI();
     }
     
-    // ▼▼▼ 変更/追加 ▼▼▼: フィルター適用関数
     function applyHistoryFilter(type, value, label) {
         gameState.historyFilter = { type, value };
         DOMElements.historyFilterLabel.textContent = label;
@@ -959,7 +957,6 @@
         updateHistoryUI();
     }
 
-    // ▼▼▼ 変更/追加 ▼▼▼: フィルターロジックを含むように更新
     function updateHistoryUI() {
         const list = DOMElements.historyList;
         const noHistoryMsg = DOMElements.noHistoryMessage;
@@ -1048,7 +1045,7 @@
         if (confirm('本当に対戦履歴をすべて削除しますか？この操作は取り消せません。')) {
             gameState.gameLog = [];
             localStorage.removeItem('jankenAiGameLog');
-            applyHistoryFilter('all', null, 'フィルター'); // フィルターをリセット
+            applyHistoryFilter('all', null, 'フィルター');
             updateHistoryUI();
             showNotification('履歴をクリアしました。', 2000);
         }
