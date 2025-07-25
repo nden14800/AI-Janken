@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- ▼▼▼ 変更/追加 ▼▼▼: highlight.jsの読み込み -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
@@ -378,7 +377,6 @@
             visibility: visible;
         }
 
-        /* ▼▼▼ 変更/追加 ▼▼▼: インフォメーションページのスタイル */
         #info-card .info-section {
             margin-bottom: 30px;
         }
@@ -454,7 +452,6 @@
                 </svg></span>
                 <span class="nav-item-label">設定</span>
             </a>
-            <!-- ▼▼▼ 変更/追加 ▼▼▼: インフォメーションタブを追加 -->
             <a class="nav-item" data-tab="info">
                 <span class="icon-wrapper">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info" viewBox="0 0 16 16">
@@ -669,7 +666,6 @@
                  </div>
             </section>
             
-            <!-- ▼▼▼ 変更/追加 ▼▼▼: インフォメーションセクションを追加 -->
             <section id="info-section" class="tab-content">
                 <div id="info-card" class="card">
                     <h2>インフォメーション</h2>
@@ -970,7 +966,13 @@
     }
 
     async function playerChoose(hand) {
-        if (gameState.isPaused || gameState.isOver || !DOMElements.playerChoiceButtons[0].disabled === false) return;
+        if (gameState.isPaused || gameState.isOver) return;
+        
+        // ▼▼▼ 変更/追加 ▼▼▼: プレイヤー2のターンでもボタンを無効化する処理を追加
+        if (gameState.mode === 'player-vs-player' && gameState.currentPlayer === 'p2' && !DOMElements.playerChoiceButtons[0].disabled) {
+             return;
+        }
+        
         DOMElements.playerChoiceButtons.forEach(b => b.disabled = true);
         clearTimeout(roundResetTimeoutId);
 
@@ -988,12 +990,16 @@
                 gameState.currentPlayer = 'p2';
                 DOMElements.playerHand.innerHTML = CHECK_SVG;
                 DOMElements.aiHand.textContent = '?';
+                // ▼▼▼ 変更/追加 ▼▼▼: 次のプレイヤーのためにボタンを有効化
+                DOMElements.playerChoiceButtons.forEach(b => b.disabled = false); 
             } else {
                 playRound(gameState.p1TurnChoice, hand);
             }
         }
         updateUI();
-        if(gameState.mode !== 'player-vs-player') DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
+        if(gameState.mode === 'player-vs-ai') {
+            DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
+        }
     }
 
     function quitGame() {
@@ -1032,11 +1038,26 @@
         updateHandDisplays(hand1, hand2);
         setResultMessage(resultMessage, resultClass);
         if (gameState.settings.dataAnalysisEnabled) updateAllCharts();
+        
+        // ▼▼▼ 変更/追加 ▼▼▼: Player vs Playerモードのターンをリセット
+        if(gameState.mode === 'player-vs-player') {
+            gameState.currentPlayer = 'p1';
+        }
+        
         updateUI();
         checkGameEnd();
         if (!gameState.isOver && !gameState.isPaused) {
             const delay = 2000;
-            roundResetTimeoutId = setTimeout(() => { if (gameState.isOver || gameState.isPaused) return; resetHandDisplays(); setResultMessage(getWaitingMessage()); updateUI(); }, delay);
+            roundResetTimeoutId = setTimeout(() => {
+                if (gameState.isOver || gameState.isPaused) return;
+                resetHandDisplays();
+                setResultMessage(getWaitingMessage());
+                // ▼▼▼ 変更/追加 ▼▼▼: 次のラウンドのためにボタンを有効化
+                if (gameState.mode === 'player-vs-player' || gameState.mode === 'player-vs-ai') {
+                    DOMElements.playerChoiceButtons.forEach(b => b.disabled = false);
+                }
+                updateUI();
+            }, delay);
         }
     }
 
@@ -1514,7 +1535,6 @@
         resetGame();
         initializeEventListeners();
         showTab('setup');
-        // ▼▼▼ 変更/追加 ▼▼▼: highlight.jsを初期化
         hljs.highlightAll();
     });
 </script>
