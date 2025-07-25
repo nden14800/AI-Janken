@@ -216,7 +216,7 @@
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             z-index: 10;
-            width: 200px;
+            width: 220px;
             overflow: hidden;
             animation: fadeIn 0.2s;
         }
@@ -241,6 +241,19 @@
             height: 1px;
             background-color: var(--border-color);
             margin: 5px 0;
+        }
+        /* ▼▼▼ 変更/追加 ▼▼▼: 日付フィルターのスタイル */
+        .filter-dropdown .date-filter-item {
+            padding: 8px 15px;
+        }
+        .filter-dropdown .date-filter-item input[type="date"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
         }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
@@ -273,6 +286,27 @@
             .player-area, .ai-area { width: 100px; }
             .history-item { grid-template-columns: 1fr; text-align: center; }
             .detail-item { text-align: center; }
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s, color 0.2s;
+        }
+        .back-button:hover {
+            opacity: 1;
+            color: var(--text-color);
+        }
+        .back-button svg {
+            width: 20px;
+            height: 20px;
         }
 
         .ai-model-selector {
@@ -446,7 +480,6 @@
 
             <section id="setup-section" class="tab-content active">
                 <div id="setup-card" class="card">
-                    <!-- ▼▼▼ 変更/追加 ▼▼▼: モード選択を削除し、勝負回数選択を直接表示 -->
                     <div id="game-length-container">
                         <h2>1. 勝負回数選択</h2>
                         <p class="card-description">何回勝負で決着をつけますか？回数が多いほど戦略が重要になります。</p>
@@ -527,9 +560,15 @@
                                     </svg>
                                     <span id="history-filter-label">フィルター</span>
                                 </button>
+                                <!-- ▼▼▼ 変更/追加 ▼▼▼: 日付フィルターを追加 -->
                                 <div id="history-filter-dropdown" class="filter-dropdown">
                                     <ul>
                                         <li><a href="#" data-filter-type="all">すべての履歴</a></li>
+                                        <li class="filter-divider"></li>
+                                        <li class="filter-header">日付で絞り込む</li>
+                                        <li class="date-filter-item">
+                                            <input type="date" id="history-date-filter">
+                                        </li>
                                         <li class="filter-divider"></li>
                                         <li class="filter-header">勝敗で絞り込む</li>
                                         <li><a href="#" data-filter-type="result" data-filter-value="win">あなたの勝ち</a></li>
@@ -661,7 +700,7 @@
                                 </tr>
                                 <tr>
                                     <td><strong>履歴</strong></td>
-                                    <td>過去の対戦結果を最大100件まで自動で保存・閲覧できます。フィルター機能を使えば、「勝ち」「負け」「引き分け」で試合を絞り込んで表示することも可能です。各履歴をクリックすると、全ラウンドの詳細な内容と統計グラフを確認できます。</td>
+                                    <td>過去の対戦結果を最大100件まで自動で保存・閲覧できます。フィルター機能を使えば、「勝ち」「負け」「引き分け」、または特定の日付で試合を絞り込んで表示することも可能です。各履歴をクリックすると、全ラウンドの詳細な内容と統計グラフを確認できます。</td>
                                 </tr>
                                 <tr>
                                     <td><strong>設定</strong></td>
@@ -781,6 +820,7 @@
         historyFilterButton: document.getElementById('history-filter-button'),
         historyFilterDropdown: document.getElementById('history-filter-dropdown'),
         historyFilterLabel: document.getElementById('history-filter-label'),
+        historyDateFilter: document.getElementById('history-date-filter'),
         aiModelSelector: document.getElementById('ai-model-selector'),
         aiModelSelectorHeader: document.querySelector('.ai-model-selector-header'),
         aiModelCurrentName: document.getElementById('ai-model-current-name'),
@@ -827,13 +867,17 @@
             DOMElements.historyFilterDropdown.classList.toggle('show');
         });
         DOMElements.historyFilterDropdown.addEventListener('click', (e) => {
-            e.preventDefault();
             if (e.target.tagName === 'A') {
+                e.preventDefault();
                 const type = e.target.dataset.filterType;
                 const value = e.target.dataset.filterValue;
                 const label = e.target.textContent;
                 applyHistoryFilter(type, value, label);
             }
+        });
+        DOMElements.historyDateFilter.addEventListener('change', (e) => {
+            const date = e.target.value;
+            applyHistoryFilter('date', date, date);
         });
         DOMElements.aiModelSelectorHeader.addEventListener('click', () => {
             DOMElements.aiModelSelector.classList.toggle('open');
@@ -902,7 +946,7 @@
     }
 
     async function playerChoose(hand) {
-        if (gameState.isPaused || gameState.isOver || !DOMElements.playerChoiceButtons[0].disabled === false) return;
+        if (gameState.isPaused || gameState.isOver) return;
         DOMElements.playerChoiceButtons.forEach(b => b.disabled = true);
         clearTimeout(roundResetTimeoutId);
 
@@ -1098,7 +1142,7 @@
         const savedLog = JSON.parse(localStorage.getItem('jankenAiGameLog')) || [];
 
         gameState = {
-            mode: 'player-vs-ai', // ▼▼▼ 変更/追加 ▼▼▼: モードを固定
+            mode: 'player-vs-ai',
             gameLength: length, setupComplete: false, currentRound: 0,
             scores: { p1: 0, p2: 0, draw: 0 },
             handsCount: { p1: { rock: 0, paper: 0, scissors: 0 }, p2: { rock: 0, paper: 0, scissors: 0 } },
@@ -1162,7 +1206,7 @@
 
         const logEntry = {
             gameId: new Date().toISOString(),
-            mode: 'あなた VS AI', // ▼▼▼ 変更/追加 ▼▼▼: モード名を固定
+            mode: 'あなた VS AI',
             p1Name: DOMElements.playerName.textContent,
             p2Name: DOMElements.aiName.textContent,
             finalScore: { ...gameState.scores },
@@ -1182,7 +1226,17 @@
     }
     
     function applyHistoryFilter(type, value, label) {
-        gameState.historyFilter = { type, value };
+        if (type === 'all') {
+            DOMElements.historyDateFilter.value = '';
+        }
+        if (type === 'date') {
+            gameState.historyFilter.type = 'date';
+            gameState.historyFilter.value = value;
+        } else {
+            gameState.historyFilter.type = type;
+            gameState.historyFilter.value = value;
+        }
+        
         DOMElements.historyFilterLabel.textContent = label;
         DOMElements.historyFilterDropdown.classList.remove('show');
         updateHistoryUI();
@@ -1196,12 +1250,18 @@
         let filteredLogs = [...gameState.gameLog];
         const { type, value } = gameState.historyFilter;
 
-        if (type === 'result') { // ▼▼▼ 変更/追加 ▼▼▼: フィルタータイプをresultのみに限定
+        if (type !== 'all') {
             filteredLogs = filteredLogs.filter(log => {
-                const { p1, p2 } = log.finalScore;
-                if (value === 'win') return p1 > p2;
-                if (value === 'lose') return p2 > p1;
-                if (value === 'draw') return p1 === p2;
+                if (type === 'result') {
+                    const { p1, p2 } = log.finalScore;
+                    if (value === 'win') return p1 > p2;
+                    if (value === 'lose') return p2 > p1;
+                    if (value === 'draw') return p1 === p2;
+                }
+                if (type === 'date' && value) {
+                    const logDate = new Date(log.gameId).toLocaleDateString('sv-SE'); // YYYY-MM-DD形式
+                    return logDate === value;
+                }
                 return true;
             });
         }
