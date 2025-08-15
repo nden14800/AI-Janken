@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>じゃんけんAI (Gemini搭載)</title>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- ▼▼▼ 変更 ▼▼▼: ApexChartsのCDNを削除し、HighchartsのCDNを追加 -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -69,7 +73,6 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
-        /* ▼▼▼ 変更 ▼▼▼: 古い 'dash' アニメーションを削除しました */
 
         body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; }
         .app-container { display: flex; }
@@ -161,20 +164,8 @@
         .hand-display svg { width: 1em; height: 1em; fill: var(--text-color); }
         
         .loader-container { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; justify-content: center; align-items: center; }
-        /* ▼▼▼ 変更 ▼▼▼: スピナーのスタイルを更新しました */
-        .loader {
-            width: 50px;
-            height: 50px;
-            animation: rotate 1s linear infinite;
-            transform-origin: center center;
-        }
-        .loader .path {
-            stroke: var(--primary-color);
-            stroke-linecap: round;
-            stroke-dasharray: 89 150;
-            stroke-dashoffset: 0;
-        }
-        /* ▲▲▲ 変更ここまで ▲▲▲ */
+        .loader { width: 50px; height: 50px; animation: rotate 1s linear infinite; transform-origin: center center; }
+        .loader .path { stroke: var(--primary-color); stroke-linecap: round; stroke-dasharray: 89 150; stroke-dashoffset: 0; }
 
         #result-display { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; font-size: 1.3em; font-weight: 700; }
         .result-win { background-color: var(--win-glow); color: #27ae60; }
@@ -448,6 +439,18 @@
             text-decoration: underline;
         }
 
+        /* ▼▼▼ 追加 ▼▼▼: Highchartsのツールチップスタイル */
+        .highcharts-tooltip span {
+            font-family: 'Roboto', sans-serif !important;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 4px;
+            color: var(--text-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* ▲▲▲ 追加ここまで ▲▲▲ */
+
     </style>
 </head>
 <body>
@@ -525,11 +528,9 @@
                                     <div id="ai-name" class="name">AI</div>
                                     <div id="ai-hand" class="hand-display">?</div>
                                     <div id="ai-loader" class="loader-container">
-                                        <!-- ▼▼▼ 変更 ▼▼▼: スピナーのSVGを変更しました -->
                                         <svg class="loader" viewBox="0 0 50 50">
                                             <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="2.5"></circle>
                                         </svg>
-                                        <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
                                     </div>
                                 </div>
                             </div>
@@ -554,8 +555,10 @@
                     <div class="data-panel">
                          <div id="charts-card" class="card">
                             <h2>データ分析グラフ</h2>
-                            <div id="resultsChart" class="chart-container"></div>
-                            <div id="handsChart" class="chart-container" style="margin-top: 25px;"></div>
+                            <!-- ▼▼▼ 変更 ▼▼▼: グラフ描画用のdiv -->
+                            <div id="resultsChart" class="chart-container" style="height: 300px;"></div>
+                            <div id="handsChart" class="chart-container" style="margin-top: 25px; height: 300px;"></div>
+                             <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
                         </div>
                     </div>
                 </div>
@@ -741,7 +744,9 @@
                         <ul>
                             <li><strong>HTML5 / CSS3 / JavaScript (ES6+):</strong> ウェブの標準技術をベースに構築されています。</li>
                             <li><strong>Google Gemini API:</strong> AIの思考エンジンとして<code>gemini-2.5-flash</code>モデルを利用しています。</li>
-                            <li><strong>ApexCharts.js:</strong> 対戦データ（勝敗推移、手の内訳）をリッチでインタラクティブなグラフとして可視化するために使用しています。</li>
+                            <!-- ▼▼▼ 変更 ▼▼▼: ライブラリ名を変更 -->
+                            <li><strong>Highcharts.js:</strong> 対戦データ（勝敗推移、手の内訳）をリッチでインタラクティブなグラフとして可視化するために使用しています。</li>
+                            <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
                             <li><strong>Highlight.js:</strong> このインフォメーションページでコードスニペットを美しく表示するために使用しています。</li>
                         </ul>
                         <p>
@@ -768,8 +773,10 @@
             <div class="modal-body">
                 <ul id="modal-detail-list" class="detail-list"></ul>
                 <div id="modal-charts-container">
-                    <div id="modal-results-chart" class="chart-container"></div>
-                    <div id="modal-hands-chart" class="chart-container" style="margin-top: 25px;"></div>
+                    <!-- ▼▼▼ 変更 ▼▼▼: グラフ描画用のdiv -->
+                    <div id="modal-results-chart" class="chart-container" style="height: 250px;"></div>
+                    <div id="modal-hands-chart" class="chart-container" style="margin-top: 25px; height: 250px;"></div>
+                    <!-- ▲▲▲ 変更ここまで ▲▲▲ -->
                 </div>
             </div>
         </div>
@@ -783,8 +790,10 @@
     const CHECK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>`;
 
     let gameState = {};
+    // ▼▼▼ 変更 ▼▼▼: Highchartsのインスタンスを保持する変数
     let resultsChart = null, handsChart = null;
     let modalResultsChart = null, modalHandsChart = null;
+    // ▲▲▲ 変更ここまで ▲▲▲
     let roundResetTimeoutId = null, notificationTimeoutId = null;
 
     const DOMElements = {
@@ -866,14 +875,16 @@
         DOMElements.historyDetailModal.addEventListener('click', (e) => {
             if (e.target === DOMElements.historyDetailModal) hideHistoryDetail();
         });
+        // ▼▼▼ 変更 ▼▼▼: カラーテーマ変更時のイベントリスナー
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
             updateAllChartsTheme();
-            if(DOMElements.historyDetailModal.style.display === 'flex') {
-                const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (modalResultsChart) modalResultsChart.updateOptions(opts);
-                if (modalHandsChart) modalHandsChart.updateOptions(opts);
+            if(DOMElements.historyDetailModal.style.display === 'flex' && (modalResultsChart || modalHandsChart)) {
+                const themeOptions = getHighchartsThemeOptions();
+                if (modalResultsChart) modalResultsChart.update(themeOptions);
+                if (modalHandsChart) modalHandsChart.update(themeOptions);
             }
         });
+        // ▲▲▲ 変更ここまで ▲▲▲
         DOMElements.historyFilterButton.addEventListener('click', (e) => {
             e.stopPropagation();
             DOMElements.historyFilterDropdown.classList.toggle('show');
@@ -1381,6 +1392,7 @@
 
     function hideHistoryDetail() {
         DOMElements.historyDetailModal.style.display = 'none';
+        // ▼▼▼ 変更 ▼▼▼: Highchartsのインスタンスを破棄
         if (modalResultsChart) {
             modalResultsChart.destroy();
             modalResultsChart = null;
@@ -1389,12 +1401,15 @@
             modalHandsChart.destroy();
             modalHandsChart = null;
         }
+        // ▲▲▲ 変更ここまで ▲▲▲
     }
 
+    // ▼▼▼ 変更 ▼▼▼: ApexChartsからHighchartsへの書き換え
     function renderDetailCharts(log) {
         if (modalResultsChart) modalResultsChart.destroy();
         if (modalHandsChart) modalHandsChart.destroy();
 
+        // データ整形
         const p1Scores = [0], p2Scores = [0], drawScores = [0], rounds = [0];
         let c_p1 = 0, c_p2 = 0, c_draw = 0;
         for (let i = 0; i < log.roundDetails.p1_hands.length; i++) {
@@ -1402,10 +1417,10 @@
             if(winner === 'p1') c_p1++;
             else if (winner === 'p2') c_p2++;
             else c_draw++;
+            rounds.push(i + 1);
             p1Scores.push(c_p1);
             p2Scores.push(c_p2);
             drawScores.push(c_draw);
-            rounds.push(i + 1);
         }
 
         const p1HandCounts = { rock: 0, paper: 0, scissors: 0 };
@@ -1413,89 +1428,156 @@
         log.roundDetails.p1_hands.forEach(hand => p1HandCounts[hand]++);
         log.roundDetails.p2_hands.forEach(hand => p2HandCounts[hand]++);
         
-        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const commonOptions = getChartOptions(isDarkMode);
-        const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
+        const themeOptions = getHighchartsThemeOptions();
+        const colors = [themeOptions.colors[0], themeOptions.colors[1], themeOptions.colors[2]];
 
-        modalResultsChart = new ApexCharts(document.querySelector("#modal-results-chart"), {
-            ...commonOptions, series: [{name: log.p1Name, data: rounds.map((r, i) => [r, p1Scores[i]]) }, { name: log.p2Name, data: rounds.map((r, i) => [r, p2Scores[i]]) }, { name: 'あいこ', data: rounds.map((r, i) => [r, drawScores[i]]) } ], colors: colors,
-            chart: { ...commonOptions.chart, type: 'line', height: 250 },
-            stroke: { curve: 'straight', width: 2 },
-            xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: rounds.length -1 || 1 },
-            yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, title: { text: '勝負の推移', align: 'left' }
+        // スコア推移グラフ
+        modalResultsChart = Highcharts.chart('modal-results-chart', {
+            ...themeOptions,
+            chart: { ...themeOptions.chart, type: 'line' },
+            title: { text: '勝負の推移' },
+            xAxis: {
+                title: { text: 'ラウンド数' },
+                categories: rounds,
+                tickInterval: Math.max(1, Math.floor(rounds.length / 10))
+            },
+            yAxis: { title: { text: '累計スコア' }, min: 0 },
+            series: [
+                { name: log.p1Name, data: p1Scores, color: colors[0] },
+                { name: log.p2Name, data: p2Scores, color: colors[1] },
+                { name: 'あいこ', data: drawScores, color: colors[2] }
+            ]
         });
 
-        modalHandsChart = new ApexCharts(document.querySelector("#modal-hands-chart"), {
-            ...commonOptions, series: [{ name: log.p1Name, data: Object.values(p1HandCounts) }, { name: log.p2Name, data: Object.values(p2HandCounts) }], colors: colors.slice(0, 2),
-            chart: { ...commonOptions.chart, type: 'bar', height: 250 },
-            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } },
-            xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } },
-            title: { text: '各手の合計選択回数', align: 'left' }, dataLabels: { enabled: false }
+        // 手の内訳グラフ
+        modalHandsChart = Highcharts.chart('modal-hands-chart', {
+            ...themeOptions,
+            chart: { ...themeOptions.chart, type: 'column' },
+            title: { text: '各手の合計選択回数' },
+            xAxis: { categories: ['✊', '✋', '✌️'] },
+            yAxis: { min: 0, title: { text: '選択回数' } },
+            plotOptions: { column: { pointPadding: 0.2, borderWidth: 0 } },
+            series: [
+                { name: log.p1Name, data: Object.values(p1HandCounts), color: colors[0] },
+                { name: log.p2Name, data: Object.values(p2HandCounts), color: colors[1] }
+            ]
         });
-        
-        modalResultsChart.render();
-        modalHandsChart.render();
     }
 
-    function getChartOptions(isDarkMode) { return { chart: { fontFamily: 'Roboto, sans-serif', foreColor: isDarkMode ? '#e0e0e0' : '#2c3e50', toolbar: { show: false }, zoom: { enabled: false }, animations: { enabled: true, easing: 'linear', dynamicAnimation: { speed: 500 } } }, xaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' } }, axisBorder: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, axisTicks: { color: isDarkMode ? '#3a3a5e' : '#e3e8ee' } }, yaxis: { labels: { style: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', fontFamily: 'Roboto, sans-serif' }, formatter: (val) => Math.round(val) } }, grid: { borderColor: isDarkMode ? '#3a3a5e' : '#e3e8ee' }, legend: { labels: { colors: isDarkMode ? '#e0e0e0' : '#2c3e50', useSeriesColors: false }, markers: { radius: 4 } }, tooltip: { theme: isDarkMode ? 'dark' : 'light' } }; }
+    function getHighchartsThemeOptions() {
+        const style = getComputedStyle(document.documentElement);
+        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        return {
+            colors: [style.getPropertyValue('--accent1-color').trim(), style.getPropertyValue('--accent2-color').trim(), style.getPropertyValue('--accent3-color').trim()],
+            chart: {
+                backgroundColor: style.getPropertyValue('--card-bg').trim(),
+                style: { fontFamily: 'Roboto, sans-serif' }
+            },
+            title: { style: { color: style.getPropertyValue('--text-color').trim() } },
+            legend: {
+                itemStyle: { color: style.getPropertyValue('--text-color').trim() },
+                itemHoverStyle: { color: style.getPropertyValue('--primary-color').trim() }
+            },
+            xAxis: {
+                labels: { style: { color: style.getPropertyValue('--secondary-text').trim() } },
+                title: { style: { color: style.getPropertyValue('--secondary-text').trim() } },
+                lineColor: style.getPropertyValue('--border-color').trim(),
+                tickColor: style.getPropertyValue('--border-color').trim(),
+            },
+            yAxis: {
+                labels: { style: { color: style.getPropertyValue('--secondary-text').trim() } },
+                title: { style: { color: style.getPropertyValue('--secondary-text').trim() } },
+                gridLineColor: style.getPropertyValue('--border-color').trim()
+            },
+            tooltip: {
+                backgroundColor: 'var(--card-bg)',
+                borderColor: 'var(--border-color)',
+                style: { color: 'var(--text-color)' },
+                useHTML: true
+            },
+            exporting: {
+                buttons: {
+                    contextButton: {
+                        symbolStroke: style.getPropertyValue('--secondary-text').trim(),
+                        theme: { fill: style.getPropertyValue('--card-bg').trim() }
+                    }
+                }
+            },
+            credits: { enabled: false }
+        };
+    }
     
     function initializeCharts() {
-        if (!DOMElements.dataAnalysisEnabledSwitch.checked) return;
-        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const commonOptions = getChartOptions(isDarkMode);
-        const colors = ['--accent1-color', '--accent2-color', '--accent3-color'].map(c => getComputedStyle(document.documentElement).getPropertyValue(c).trim());
+        if (!gameState.settings.dataAnalysisEnabled) return;
         
         if (resultsChart) resultsChart.destroy();
-        resultsChart = new ApexCharts(document.querySelector("#resultsChart"), { 
-            ...commonOptions, series: [], colors: colors, 
-            chart: { ...commonOptions.chart, id: 'resultsChart', type: 'line', height: 300 }, 
-            stroke: { curve: 'straight', width: 2 }, 
-            xaxis: { ...commonOptions.xaxis, type: 'numeric', title: { text: 'ラウンド数' }, min: 0, max: 1 },
-            yaxis: { ...commonOptions.yaxis, title: { text: '累計スコア' }, min: 0 }, 
-            title: { text: '勝負の推移', align: 'left' } 
+        if (handsChart) handsChart.destroy();
+        
+        const themeOptions = getHighchartsThemeOptions();
+        const colors = themeOptions.colors;
+
+        resultsChart = Highcharts.chart('resultsChart', {
+            ...themeOptions,
+            chart: { ...themeOptions.chart, type: 'line' },
+            title: { text: '勝負の推移' },
+            xAxis: { title: { text: 'ラウンド数' }, categories: [0] },
+            yAxis: { title: { text: '累計スコア' }, min: 0 },
+            series: [
+                { name: DOMElements.p1HandsTitle.textContent, data: [0], color: colors[0] },
+                { name: DOMElements.p2HandsTitle.textContent, data: [0], color: colors[1] },
+                { name: 'あいこ', data: [0], color: colors[2] }
+            ]
         });
         
-        if (handsChart) handsChart.destroy();
-        handsChart = new ApexCharts(document.querySelector("#handsChart"), { 
-            ...commonOptions, series: [], colors: colors.slice(0, 2), 
-            chart: { ...commonOptions.chart, id: 'handsChart', type: 'bar', height: 300 }, 
-            plotOptions: { bar: { horizontal: false, columnWidth: '55%' } }, 
-            xaxis: { ...commonOptions.xaxis, categories: ['✊', '✋', '✌️'] }, 
-            yaxis: { ...commonOptions.yaxis, title: { text: '選択回数' } }, 
-            title: { text: '各手の合計選択回数', align: 'left' }, 
-            dataLabels: { enabled: false } 
-        });
-
-        Promise.all([resultsChart.render(), handsChart.render()]).then(() => {
-            updateAllCharts();
+        handsChart = Highcharts.chart('handsChart', {
+            ...themeOptions,
+            chart: { ...themeOptions.chart, type: 'column' },
+            title: { text: '各手の合計選択回数' },
+            xAxis: { categories: ['✊', '✋', '✌️'] },
+            yAxis: { min: 0, title: { text: '選択回数' } },
+            plotOptions: { column: { pointPadding: 0.2, borderWidth: 0 } },
+            series: [
+                { name: DOMElements.p1HandsTitle.textContent, data: [0, 0, 0], color: colors[0] },
+                { name: DOMElements.p2HandsTitle.textContent, data: [0, 0, 0], color: colors[1] }
+            ]
         });
     }
     
     function updateAllCharts() {
         if (!resultsChart || !handsChart || !gameState.settings.dataAnalysisEnabled) return;
 
-        resultsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p1_scores[i]]) }, { name: DOMElements.p2HandsTitle.textContent, data: gameState.history.rounds.map((r, i) => [r, gameState.history.p2_scores[i]]) }, { name: 'あいこ', data: gameState.history.rounds.map((r, i) => [r, gameState.history.draw_scores[i]]) } ], true);
-        handsChart.updateSeries([ { name: DOMElements.p1HandsTitle.textContent, data: Object.values(gameState.handsCount.p1) }, { name: DOMElements.p2HandsTitle.textContent, data: Object.values(gameState.handsCount.p2) } ]);
-        
-        if (resultsChart) {
-            const currentRound = gameState.currentRound;
-            const xAxisMin = 0;
-            const xAxisMax = Math.max(currentRound, 1);
-            
-            resultsChart.updateOptions({
-                xaxis: {
-                    min: xAxisMin,
-                    max: xAxisMax,
-                    tickAmount: Math.min(10, xAxisMax)
-                }
-            });
-        }
+        // スコア推移グラフの更新
+        resultsChart.xAxis[0].setCategories(gameState.history.rounds, false);
+        resultsChart.series[0].setData(gameState.history.p1_scores, false);
+        resultsChart.series[1].setData(gameState.history.p2_scores, false);
+        resultsChart.series[2].setData(gameState.history.draw_scores, false);
+        resultsChart.redraw();
+
+        // 手の内訳グラフの更新
+        handsChart.series[0].setData(Object.values(gameState.handsCount.p1), false);
+        handsChart.series[1].setData(Object.values(gameState.handsCount.p2), false);
+        handsChart.redraw();
     }
     
-    function updateAllChartsTheme() { if (gameState.settings.dataAnalysisEnabled) { const opts = getChartOptions(window.matchMedia('(prefers-color-scheme: dark)').matches); if (resultsChart) resultsChart.updateOptions(opts); if (handsChart) handsChart.updateOptions(opts); } }
+    function updateAllChartsTheme() {
+        if (gameState.settings.dataAnalysisEnabled) {
+            const themeOptions = getHighchartsThemeOptions();
+            if (resultsChart) resultsChart.update(themeOptions);
+            if (handsChart) handsChart.update(themeOptions);
+        }
+    }
+    // ▲▲▲ 変更ここまで ▲▲▲
+
     function showNotification(message, duration = 3000) { clearTimeout(notificationTimeoutId); DOMElements.notificationMessage.textContent = message; DOMElements.notificationArea.classList.add('show'); notificationTimeoutId = setTimeout(() => DOMElements.notificationArea.classList.remove('show'), duration); }
     
     document.addEventListener('DOMContentLoaded', () => {
+        // ▼▼▼ 追加 ▼▼▼: Highchartsのグローバル設定
+        Highcharts.setOptions({
+            time: { useUTC: false } 
+        });
+        // ▲▲▲ 追加ここまで ▲▲▲
+
         resetGame();
         initializeEventListeners();
         showTab('setup');
